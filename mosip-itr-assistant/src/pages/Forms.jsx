@@ -1,12 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Save, ArrowRight, CheckCircle, AlertCircle, Zap } from 'lucide-react';
+import { Save, ArrowRight, CheckCircle, AlertCircle, Zap, User, CreditCard, FileText, DollarSign, Shield, Database, TrendingUp } from 'lucide-react';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import Card from '../components/Card';
 import nerExtractor from '../utils/nerExtractor';
-import './Forms.css';
+
+// Helper function to get fields for each tab
+const getFieldsForTab = (tabId) => {
+    const fieldMappings = {
+        'pre-reg': ['name', 'pan', 'aadhaar', 'date_of_birth', 'mobile', 'email'],
+        'bank': ['account_number', 'ifsc', 'bank_name', 'address', 'pincode'],
+        'form16': ['employer', 'tan', 'assessment_year', 'financial_year', 'gross_salary', 'tds_deducted'],
+        'income': ['total_income', 'gross_salary', 'tds_deducted']
+    };
+    
+    return fieldMappings[tabId] || [];
+};
 
 const FormsPage = () => {
     const navigate = useNavigate();
@@ -55,10 +65,10 @@ const FormsPage = () => {
     });
 
     const tabs = [
-        { id: 'pre-reg', label: 'Pre-Registration', icon: CheckCircle },
-        { id: 'bank', label: 'Bank Details', icon: CheckCircle },
-        { id: 'form16', label: 'Form 16', icon: CheckCircle },
-        { id: 'income', label: 'Income Details', icon: CheckCircle }
+        { id: 'pre-reg', label: 'Personal Info', icon: User, color: 'bg-blue-500' },
+        { id: 'bank', label: 'Bank Details', icon: CreditCard, color: 'bg-emerald-500' },
+        { id: 'form16', label: 'Form 16', icon: FileText, color: 'bg-purple-500' },
+        { id: 'income', label: 'Income Details', icon: DollarSign, color: 'bg-orange-500' }
     ];
 
     useEffect(() => {
@@ -82,9 +92,9 @@ const FormsPage = () => {
     };
 
     const getConfidenceColor = (confidence) => {
-        if (confidence >= 0.8) return '#10b981'; // Green
-        if (confidence >= 0.6) return '#f59e0b'; // Yellow
-        return '#ef4444'; // Red
+        if (confidence >= 0.8) return 'text-green-600';
+        if (confidence >= 0.6) return 'text-yellow-600';
+        return 'text-red-600';
     };
 
     const getConfidenceIcon = (confidence) => {
@@ -105,83 +115,141 @@ const FormsPage = () => {
         const ConfidenceIcon = getConfidenceIcon(confidence);
         
         return (
-            <div key={field} className="field-with-confidence">
+            <div key={field} className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <label className="text-sm font-semibold text-[hsl(var(--foreground))]">{label}</label>
+                    {confidence > 0 && (
+                        <div className={`flex items-center gap-1 text-xs ${getConfidenceColor(confidence)}`}>
+                            <ConfidenceIcon className="w-3 h-3" />
+                            <span>{Math.round(confidence * 100)}%</span>
+                        </div>
+                    )}
+                </div>
                 <Input
-                    label={label}
                     value={formData[field]}
                     type={type}
                     readOnly={readOnly}
                     onChange={(e) => handleInputChange(field, e.target.value)}
-                    className={confidence >= 0.8 ? 'high-confidence' : confidence >= 0.6 ? 'medium-confidence' : 'low-confidence'}
+                    className={`w-full ${
+                        confidence >= 0.8 ? 'border-green-300 bg-green-50' : 
+                        confidence >= 0.6 ? 'border-yellow-300 bg-yellow-50' : 
+                        confidence > 0 ? 'border-red-300 bg-red-50' : ''
+                    }`}
                 />
-                {confidence > 0 && (
-                    <div className="confidence-indicator" style={{ color: getConfidenceColor(confidence) }}>
-                        <ConfidenceIcon size={16} />
-                        <span>{Math.round(confidence * 100)}%</span>
-                    </div>
-                )}
             </div>
         );
     };
 
     if (isLoading) {
         return (
-            <div className="container page-wrapper">
-                <div className="loading-container">
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    >
-                        <Zap size={40} />
-                    </motion.div>
-                    <p>Processing extracted data with NER...</p>
-                </div>
+            <div className="min-h-screen bg-gradient-to-br from-background via-[hsl(var(--muted))]/30 to-background flex items-center justify-center">
+                <motion.div
+                    className="text-center"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                >
+                    <div className="w-16 h-16 bg-[hsl(var(--gov-green))]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        >
+                            <Zap className="w-8 h-8 text-[hsl(var(--gov-green))]" />
+                        </motion.div>
+                    </div>
+                    <h3 className="text-xl font-bold text-[hsl(var(--foreground))] mb-2">Processing Data</h3>
+                    <p className="text-[hsl(var(--muted-foreground))]">Processing extracted data with NER...</p>
+                </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="container page-wrapper">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <div className="forms-header">
-                    <h2>🤖 AI Auto-Filled Forms</h2>
-                    <p>Review and edit the data extracted using advanced NER techniques.</p>
-                    
-                    {/* Extraction Summary */}
-                    <motion.div
-                        className="extraction-summary"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <div className="summary-stats">
-                            <div className="stat">
-                                <span className="stat-value">{Object.keys(formData).filter(key => formData[key]).length}</span>
-                                <span className="stat-label">Fields Extracted</span>
-                            </div>
-                            <div className="stat">
-                                <span className="stat-value">
-                                    {Math.round((nerResults?.confidence || 
-                                        (Object.keys(fieldConfidenceScores).length > 0 ? 
-                                            Object.values(fieldConfidenceScores).reduce((a, b) => a + b, 0) / Object.values(fieldConfidenceScores).length : 
-                                            0.85)) * 100)}%
-                                </span>
-                                <span className="stat-label">Avg Confidence</span>
-                            </div>
-                            <div className="stat">
-                                <span className="stat-value">{processingDetails?.engines_used?.length || 3}</span>
-                                <span className="stat-label">OCR Engines</span>
-                            </div>
-                        </div>
-                    </motion.div>
+        <div className="min-h-screen bg-gradient-to-br from-background via-[hsl(var(--muted))]/30 to-background">
+            {/* Hero Section */}
+            <div className="relative pt-24 pb-16 overflow-hidden">
+                {/* Background Elements */}
+                <div className="absolute inset-0">
+                    <div className="absolute top-20 left-20 w-72 h-72 bg-[hsl(var(--gov-green))]/5 rounded-full blur-3xl animate-pulse" />
+                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-[hsl(var(--gov-gold))]/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
                 </div>
 
-                <div className="tabs-container">
-                    <div className="tabs-header">
+                <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="text-center mb-16"
+                    >
+                        <div className="inline-flex items-center gap-3 mb-6">
+                            <div className="w-3 h-3 bg-[hsl(var(--gov-green))] rounded-full animate-pulse" />
+                            <span className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">
+                                AI Auto-Filled Forms
+                            </span>
+                            <div className="w-3 h-3 bg-[hsl(var(--gov-gold))] rounded-full animate-pulse" />
+                        </div>
+                        
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-[hsl(var(--foreground))]">
+                            Review Extracted Data
+                        </h1>
+                        
+                        <p className="text-xl text-[hsl(var(--muted-foreground))] leading-relaxed max-w-3xl mx-auto">
+                            Review and edit the data extracted using advanced NER techniques. All fields are automatically populated from your documents.
+                        </p>
+                    </motion.div>
+
+                    {/* Extraction Summary */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="grid md:grid-cols-3 gap-8 mb-16"
+                    >
+                        {[
+                            {
+                                icon: Database,
+                                value: Object.keys(formData).filter(key => formData[key]).length,
+                                label: "Fields Extracted",
+                                color: "text-blue-600"
+                            },
+                            {
+                                icon: TrendingUp,
+                                value: `${Math.round((nerResults?.confidence || 
+                                    (Object.keys(fieldConfidenceScores).length > 0 ? 
+                                        Object.values(fieldConfidenceScores).reduce((a, b) => a + b, 0) / Object.values(fieldConfidenceScores).length : 
+                                        0.85)) * 100)}%`,
+                                label: "Avg Confidence",
+                                color: "text-green-600"
+                            },
+                            {
+                                icon: Shield,
+                                value: processingDetails?.engines_used?.length || 3,
+                                label: "OCR Engines",
+                                color: "text-purple-600"
+                            }
+                        ].map((stat, index) => (
+                            <div key={index} className="text-center">
+                                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                    <stat.icon className={`w-8 h-8 ${stat.color}`} />
+                                </div>
+                                <div className="text-3xl font-bold text-[hsl(var(--foreground))] mb-2">{stat.value}</div>
+                                <div className="text-sm text-[hsl(var(--muted-foreground))]">{stat.label}</div>
+                            </div>
+                        ))}
+                    </motion.div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="container mx-auto px-6 sm:px-8 lg:px-12 pb-20">
+                {/* Tabs */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] border border-[hsl(var(--border))] overflow-hidden"
+                >
+                    {/* Tab Headers */}
+                    <div className="flex overflow-x-auto bg-[hsl(var(--muted))]/30">
                         {tabs.map((tab) => {
                             const fieldsForTab = getFieldsForTab(tab.id);
                             const filledFields = fieldsForTab.filter(field => formData[field]);
@@ -190,115 +258,142 @@ const FormsPage = () => {
                             return (
                                 <button
                                     key={tab.id}
-                                    className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                                    className={`flex items-center gap-3 px-6 py-4 font-semibold text-sm whitespace-nowrap transition-all relative ${
+                                        activeTab === tab.id 
+                                            ? 'text-[hsl(var(--gov-green))] bg-white border-b-2 border-[hsl(var(--gov-green))]' 
+                                            : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-white/50'
+                                    }`}
                                     onClick={() => setActiveTab(tab.id)}
                                 >
-                                    <TabIcon size={16} />
-                                    {tab.label}
-                                    <span className="field-count">
+                                    <div className={`w-8 h-8 ${activeTab === tab.id ? 'bg-[hsl(var(--gov-green))]' : tab.color} rounded-lg flex items-center justify-center`}>
+                                        <TabIcon className="w-4 h-4 text-white" />
+                                    </div>
+                                    <span>{tab.label}</span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                        activeTab === tab.id ? 'bg-[hsl(var(--gov-green))]/10 text-[hsl(var(--gov-green))]' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'
+                                    }`}>
                                         {filledFields.length}/{fieldsForTab.length}
                                     </span>
-                                    {activeTab === tab.id && (
-                                        <motion.div className="tab-indicator" layoutId="tabIndicator" />
-                                    )}
                                 </button>
                             );
                         })}
                     </div>
 
+                    {/* Tab Content */}
                     <motion.div
-                        className="tab-content"
                         key={activeTab}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.3 }}
+                        className="p-8"
                     >
-                        <Card>
-                            {activeTab === 'pre-reg' && (
-                                <div className="form-grid">
-                                    {renderFieldWithConfidence('name', 'Full Name')}
-                                    {renderFieldWithConfidence('pan', 'PAN Number')}
-                                    {renderFieldWithConfidence('aadhaar', 'Aadhaar Number')}
-                                    {renderFieldWithConfidence('date_of_birth', 'Date of Birth', 'date')}
-                                    {renderFieldWithConfidence('mobile', 'Mobile Number', 'tel')}
-                                    {renderFieldWithConfidence('email', 'Email Address', 'email')}
-                                </div>
-                            )}
-                            
-                            {activeTab === 'bank' && (
-                                <div className="form-grid">
-                                    {renderFieldWithConfidence('account_number', 'Account Number')}
-                                    {renderFieldWithConfidence('ifsc', 'IFSC Code')}
-                                    {renderFieldWithConfidence('bank_name', 'Bank Name')}
-                                    {renderFieldWithConfidence('address', 'Address')}
-                                    {renderFieldWithConfidence('pincode', 'PIN Code')}
-                                </div>
-                            )}
-                            
-                            {activeTab === 'form16' && (
-                                <div className="form-grid">
-                                    {renderFieldWithConfidence('employer', 'Employer Name')}
-                                    {renderFieldWithConfidence('tan', 'TAN Number')}
-                                    {renderFieldWithConfidence('assessment_year', 'Assessment Year')}
-                                    {renderFieldWithConfidence('financial_year', 'Financial Year')}
-                                    {renderFieldWithConfidence('gross_salary', 'Gross Salary', 'number')}
-                                    {renderFieldWithConfidence('tds_deducted', 'TDS Deducted', 'number')}
-                                </div>
-                            )}
-                            
-                            {activeTab === 'income' && (
-                                <div className="form-grid">
+                        {activeTab === 'pre-reg' && (
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {renderFieldWithConfidence('name', 'Full Name')}
+                                {renderFieldWithConfidence('pan', 'PAN Number')}
+                                {renderFieldWithConfidence('aadhaar', 'Aadhaar Number')}
+                                {renderFieldWithConfidence('date_of_birth', 'Date of Birth', 'date')}
+                                {renderFieldWithConfidence('mobile', 'Mobile Number', 'tel')}
+                                {renderFieldWithConfidence('email', 'Email Address', 'email')}
+                            </div>
+                        )}
+                        
+                        {activeTab === 'bank' && (
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {renderFieldWithConfidence('account_number', 'Account Number')}
+                                {renderFieldWithConfidence('ifsc', 'IFSC Code')}
+                                {renderFieldWithConfidence('bank_name', 'Bank Name')}
+                                {renderFieldWithConfidence('address', 'Address')}
+                                {renderFieldWithConfidence('pincode', 'PIN Code')}
+                            </div>
+                        )}
+                        
+                        {activeTab === 'form16' && (
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {renderFieldWithConfidence('employer', 'Employer Name')}
+                                {renderFieldWithConfidence('tan', 'TAN Number')}
+                                {renderFieldWithConfidence('assessment_year', 'Assessment Year')}
+                                {renderFieldWithConfidence('financial_year', 'Financial Year')}
+                                {renderFieldWithConfidence('gross_salary', 'Gross Salary', 'number')}
+                                {renderFieldWithConfidence('tds_deducted', 'TDS Deducted', 'number')}
+                            </div>
+                        )}
+                        
+                        {activeTab === 'income' && (
+                            <div className="space-y-6">
+                                <div className="grid md:grid-cols-2 gap-6">
                                     {renderFieldWithConfidence('total_income', 'Total Income', 'number')}
                                     {renderFieldWithConfidence('gross_salary', 'Gross Salary', 'number')}
                                     {renderFieldWithConfidence('tds_deducted', 'TDS Deducted', 'number')}
-                                    <div className="income-summary">
-                                        <h4>Income Summary</h4>
-                                        <div className="summary-row">
-                                            <span>Gross Income:</span>
-                                            <span>₹{formData.gross_salary ? parseInt(formData.gross_salary).toLocaleString() : '0'}</span>
+                                </div>
+                                
+                                {/* Income Summary */}
+                                <div className="bg-[hsl(var(--muted))]/30 rounded-xl p-6 border border-[hsl(var(--border))]">
+                                    <h4 className="text-lg font-bold text-[hsl(var(--foreground))] mb-4">Income Summary</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center py-2 border-b border-[hsl(var(--border))]">
+                                            <span className="text-[hsl(var(--muted-foreground))]">Gross Income:</span>
+                                            <span className="font-semibold text-[hsl(var(--foreground))]">
+                                                ₹{formData.gross_salary ? parseInt(formData.gross_salary).toLocaleString() : '0'}
+                                            </span>
                                         </div>
-                                        <div className="summary-row">
-                                            <span>TDS Deducted:</span>
-                                            <span>₹{formData.tds_deducted ? parseInt(formData.tds_deducted).toLocaleString() : '0'}</span>
+                                        <div className="flex justify-between items-center py-2 border-b border-[hsl(var(--border))]">
+                                            <span className="text-[hsl(var(--muted-foreground))]">TDS Deducted:</span>
+                                            <span className="font-semibold text-red-600">
+                                                ₹{formData.tds_deducted ? parseInt(formData.tds_deducted).toLocaleString() : '0'}
+                                            </span>
                                         </div>
-                                        <div className="summary-row total">
-                                            <span>Net Income:</span>
-                                            <span>₹{formData.gross_salary && formData.tds_deducted ? 
-                                                (parseInt(formData.gross_salary) - parseInt(formData.tds_deducted)).toLocaleString() : '0'}</span>
+                                        <div className="flex justify-between items-center py-2 bg-[hsl(var(--gov-green))]/10 px-4 rounded-lg">
+                                            <span className="font-semibold text-[hsl(var(--foreground))]">Net Income:</span>
+                                            <span className="font-bold text-[hsl(var(--gov-green))] text-lg">
+                                                ₹{formData.gross_salary && formData.tds_deducted ? 
+                                                    (parseInt(formData.gross_salary) - parseInt(formData.tds_deducted)).toLocaleString() : '0'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                            )}
-
-                            <div className="form-actions">
-                                <Button variant="secondary" icon={Save}>Save Draft</Button>
-                                <Button 
-                                    variant="outline" 
-                                    onClick={() => {
-                                        // Re-run NER extraction
-                                        if (rawText) {
-                                            const newResults = nerExtractor.extractFields(rawText, 'ITR');
-                                            setNerResults(newResults);
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                ...newResults.fields
-                                            }));
-                                        }
-                                    }}
-                                >
-                                    <Zap size={16} />
-                                    Re-extract Fields
-                                </Button>
                             </div>
-                        </Card>
-                    </motion.div>
-                </div>
+                        )}
 
-                <div className="page-actions-right">
+                        {/* Form Actions */}
+                        <div className="flex flex-wrap gap-4 mt-8 pt-6 border-t border-[hsl(var(--border))]">
+                            <Button
+                                className="bg-white text-[hsl(var(--foreground))] border-2 border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] font-semibold py-2 px-4 rounded-xl flex items-center gap-2 transition-all"
+                            >
+                                <Save className="w-4 h-4" />
+                                Save Draft
+                            </Button>
+                            
+                            <Button
+                                onClick={() => {
+                                    // Re-run NER extraction
+                                    if (rawText) {
+                                        const newResults = nerExtractor.extractFields(rawText, 'ITR');
+                                        setNerResults(newResults);
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            ...newResults.fields
+                                        }));
+                                    }
+                                }}
+                                className="bg-[hsl(var(--gov-gold))] hover:bg-[hsl(var(--gov-gold-dark))] text-white font-semibold py-2 px-4 rounded-xl flex items-center gap-2 transition-all"
+                            >
+                                <Zap className="w-4 h-4" />
+                                Re-extract Fields
+                            </Button>
+                        </div>
+                    </motion.div>
+                </motion.div>
+
+                {/* Proceed Button */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.5 }}
+                    className="flex justify-end mt-8"
+                >
                     <Button
-                        variant="primary"
-                        size="large"
                         onClick={() => navigate('/validation', {
                             state: {
                                 extractedData: {
@@ -311,26 +406,15 @@ const FormsPage = () => {
                                 usedEnhancedOCR: true
                             }
                         })}
-                        icon={ArrowRight}
+                        className="bg-[hsl(var(--gov-green))] hover:bg-[hsl(var(--gov-green-dark))] text-white font-bold px-8 py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
                     >
                         Proceed to Validation
+                        <ArrowRight className="w-5 h-5" />
                     </Button>
-                </div>
-            </motion.div>
+                </motion.div>
+            </div>
         </div>
     );
-};
-
-// Helper function to get fields for each tab
-const getFieldsForTab = (tabId) => {
-    const fieldMappings = {
-        'pre-reg': ['name', 'pan', 'aadhaar', 'date_of_birth', 'mobile', 'email'],
-        'bank': ['account_number', 'ifsc', 'bank_name', 'address', 'pincode'],
-        'form16': ['employer', 'tan', 'assessment_year', 'financial_year', 'gross_salary', 'tds_deducted'],
-        'income': ['total_income', 'gross_salary', 'tds_deducted']
-    };
-    
-    return fieldMappings[tabId] || [];
 };
 
 export default FormsPage;
