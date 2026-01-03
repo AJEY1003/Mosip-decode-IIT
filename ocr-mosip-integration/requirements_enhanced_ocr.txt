@@ -1,0 +1,40 @@
+# Enhanced OCR Requirements - Offline OCR Engines
+# Replace Google Vision and AWS Textract with offline alternatives
+
+# Core OCR Engines
+paddlepaddle>=2.5.0
+paddleocr>=2.7.0
+easyocr>=1.7.0
+transformers>=4.30.0
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Image Processing
+opencv-python>=4.8.0
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# PDF Processing
+PyMuPDF>=1.23.0  # Primary PDF processor
+pdf2image>=1.16.0  # Fallback PDF processor
+poppler-utils  # Required for pdf2image on Linux
+
+# Traditional OCR
+pytesseract>=0.3.10
+
+# Existing requirements
+flask>=2.3.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+cryptography>=41.0.0
+requests>=2.31.0
+pyjwt>=2.8.0
+
+# Optional: GPU acceleration (uncomment if you have CUDA)
+# paddlepaddle-gpu>=2.5.0  # Instead of paddlepaddle
+# torch>=2.0.0+cu118  # CUDA version
+
+# Development and testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+reportlab>=4.0.0  # For creating test PDFs

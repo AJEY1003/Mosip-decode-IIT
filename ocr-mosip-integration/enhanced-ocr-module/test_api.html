@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .api-endpoint {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OCR API Test Interface</h1>
+        <p>Backend server is running on: <strong>http://localhost:8001</strong></p>
+        
+        <h2>API Endpoints:</h2>
+        <div class="api-endpoint">
+            <strong>GET /health</strong> - Check system health
+        </div>
+        <div class="api-endpoint">
+            <strong>GET /</strong> - API root endpoint
+        </div>
+        
+        <h2>Test API Endpoints:</h2>
+        <button onclick="testHealth()">Test Health</button>
+        <button onclick="testRoot()">Test Root</button>
+        
+        <div id="result" class="result" style="display:none;">
+            <h3>Response:</h3>
+            <pre id="response"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:8001/health');
+                const data = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+        
+        async function testRoot() {
+            try {
+                const response = await fetch('http://localhost:8001/');
+                const data = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

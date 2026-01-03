@@ -1,0 +1,10 @@
+Sample Document for Testing
+==========================
+
+Name: John Doe
+Date of Birth: 1990-05-15
+ID Number: ABCDE1234F
+Address: 123 Sample Street, Sample City, Sample State
+Document Type: PAN Card
+
+This is a sample document created for testing the OCR system.

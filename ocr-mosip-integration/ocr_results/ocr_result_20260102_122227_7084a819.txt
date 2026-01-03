@@ -1,0 +1,77 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: 7084a819-f371-46c1-aac7-6ac309b7b9eb
+Timestamp: 2026-01-02T12:22:27.165291
+Document Type: ITR Document
+Engines Used: easyocr, trocr, tesseract
+Success: True
+Confidence: 0.749
+Processing Time: 67.99s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+R.M.K. Engineering College
+Department of Artificial Intelligence and Data Science
+Course Code: 20IT403
+Course Title: DATABASE MANAGEMENT SYSTEMS
+December 20, 2025
+1 Course Outcomes
+At the end of the course, Students will be able to
+¢ CO 1: Implement SQL and effective relational database design concepts.
+न CO 2: Map ER model to Relational model to perform database design effectively.
+¢ CO 3: Compare and contrast various indexing strategies in different database systems.
+¢ CO 4: Implement queries using normalization criteria and optimization techniques.
+e CO 5: Analyse how advanced databases differ from traditional databases.
+¢ CO 6: Design and deploy an efficient and scalable data storage node for varied kind of application
+requirements.
+2 Correlation Levels
+Range _ Level
+< 10% 0
+11 60.25% 1
+26 to 40% 2
+> 40% 3
+3 POl1: Engineering knowledge Apply the knowledge of mathe-
+matics, science, engineering fundamentals, and an engineering
+specialisation for the solution of complex engineering problems.
+3.1 Competencies and Performance Indicators
+Competencies Performance Indicators
+1.1 Demonstrate competence in mathematical modelling 1.1.1 Apply mathematical techniques
+1.1.2 Apply advanced mathematical t
+1.2 Demonstrate competence in basic sciences 1.2.1 Apply laws of natural science (e
+1.3 Demonstrate competence in engineering fundamentals 1.3.1 Apply fundamental engineering
+1.4 Demonstrate competence in specialized engineering knowledge to the program 1.4.1 Apply AI and Data Science conc
+1
+
+[Text Length: 1506 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+name: Engineering College
+document_type: ITR Document
+text_analysis: {'total_characters': 1506, 'total_words': 221, 'has_numbers': True, 'has_uppercase': True, 'has_lowercase': True, 'language_detected': 'english'}
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.635
+  Text Length: 1467
+
+TROCR:
+  Success: True
+  Confidence: 0.700
+  Text Length: 10
+
+TESSERACT:
+  Success: True
+  Confidence: 0.912
+  Text Length: 1506
+
+================================================================================
+END OF RESULTS
+================================================================================

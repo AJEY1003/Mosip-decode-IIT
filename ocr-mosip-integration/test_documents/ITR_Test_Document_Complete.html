@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITR Test Document - Complete</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .section h2 {
+            color: #27ae60;
+            border-bottom: 2px solid #27ae60;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .field-row {
+            display: flex;
+            margin: 10px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+        }
+        .field-label {
+            font-weight: bold;
+            width: 200px;
+            color: #2c3e50;
+        }
+        .field-value {
+            flex: 1;
+            color: #34495e;
+        }
+        .income-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .income-table th, .income-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .income-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        .income-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .declaration {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-left: 5px solid #e74c3c;
+            margin: 30px 0;
+        }
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 2px solid #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>INCOME TAX RETURN - ITR-1 (SAHAJ)</h1>
+        <p><strong>Assessment Year: 2024-25</strong></p>
+        <p><strong>Financial Year: 2023-24</strong></p>
+        <p>Generated on: 02/01/2026 14:29:48</p>
+    </div>
+
+    <div class="section">
+        <h2>PERSONAL INFORMATION</h2>
+        <div class="field-row">
+            <div class="field-label">Name:</div>
+            <div class="field-value">Rajesh Kumar Sharma</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">PAN:</div>
+            <div class="field-value">ABCDE1234F</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Aadhaar Number:</div>
+            <div class="field-value">1234 5678 9012</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Date of Birth:</div>
+            <div class="field-value">15/03/1985</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Mobile Number:</div>
+            <div class="field-value">+91 9876543210</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Email Address:</div>
+            <div class="field-value">rajesh.sharma@email.com</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Address:</div>
+            <div class="field-value">123 MG Road, Koramangala, Bangalore, Karnataka</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">PIN Code:</div>
+            <div class="field-value">560001</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>EMPLOYMENT DETAILS</h2>
+        <div class="field-row">
+            <div class="field-label">Employer:</div>
+            <div class="field-value">Tech Solutions Private Limited</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Employer TAN:</div>
+            <div class="field-value">BLRA12345B</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Employer Address:</div>
+            <div class="field-value">456 Electronic City, Bangalore, Karnataka 560100</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Employment Type:</div>
+            <div class="field-value">Salaried Employee</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Designation:</div>
+            <div class="field-value">Senior Software Engineer</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>INCOME DETAILS</h2>
+        <table class="income-table">
+            <tr>
+                <th>Income Head</th>
+                <th>Amount (₹)</th>
+            </tr>
+            <tr>
+                <td><strong>Gross Salary</strong></td>
+                <td><strong>12,00,000</strong></td>
+            </tr>
+            <tr>
+                <td>Less: Professional Tax</td>
+                <td>2,500</td>
+            </tr>
+            <tr>
+                <td>Less: Standard Deduction</td>
+                <td>50,000</td>
+            </tr>
+            <tr>
+                <td><strong>Total Income</strong></td>
+                <td><strong>11,47,500</strong></td>
+            </tr>
+            <tr>
+                <td><strong>TDS Deducted</strong></td>
+                <td><strong>1,50,000</strong></td>
+            </tr>
+            <tr>
+                <td>Tax Payable</td>
+                <td>1,47,500</td>
+            </tr>
+            <tr>
+                <td style="color: green;"><strong>Refund Due</strong></td>
+                <td style="color: green;"><strong>2,500</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>BANK DETAILS FOR REFUND</h2>
+        <div class="field-row">
+            <div class="field-label">Bank Name:</div>
+            <div class="field-value">State Bank of India</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Account Number:</div>
+            <div class="field-value">123456789012</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">IFSC Code:</div>
+            <div class="field-value">SBIN0001234</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Account Type:</div>
+            <div class="field-value">Savings Account</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Branch:</div>
+            <div class="field-value">MG Road Branch, Bangalore</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>ADDITIONAL INFORMATION</h2>
+        <div class="field-row">
+            <div class="field-label">Filing Date:</div>
+            <div class="field-value">02/01/2026</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Place of Filing:</div>
+            <div class="field-value">Bangalore</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">ITR Type:</div>
+            <div class="field-value">ITR-1 (Sahaj)</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Status:</div>
+            <div class="field-value">Original Return</div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">Verification:</div>
+            <div class="field-value">Electronic Verification Code (EVC)</div>
+        </div>
+    </div>
+
+    <div class="declaration">
+        <h2>DECLARATION</h2>
+        <p>I, <strong>Rajesh Kumar Sharma</strong>, son of Late Shri Kumar Sharma, solemnly declare that to the best of my knowledge and belief, the information given in this return and the schedules thereto is correct and complete and that the amount of tax shown therein as payable is correctly worked out according to the provisions of the Income-tax Act, 1961.</p>
+    </div>
+
+    <div class="signature-section">
+        <div>
+            <p><strong>Place:</strong> Bangalore</p>
+            <p><strong>Date:</strong> 02/01/2026</p>
+        </div>
+        <div>
+            <p><strong>Signature:</strong> Rajesh Kumar Sharma</p>
+            <p><strong>PAN:</strong> ABCDE1234F</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background-color: #e8f5e8; border-radius: 8px;">
+        <h3 style="color: #27ae60;">🎯 NER Test Fields Summary</h3>
+        <p><strong>This document contains all fields that the NER system can extract:</strong></p>
+        <ul>
+            <li><strong>Personal:</strong> Name, PAN, Aadhaar, DOB, Mobile, Email, Address, PIN</li>
+            <li><strong>Employment:</strong> Employer, TAN</li>
+            <li><strong>Financial:</strong> Gross Salary, TDS Deducted, Total Income</li>
+            <li><strong>Banking:</strong> Bank Name, Account Number, IFSC</li>
+            <li><strong>Assessment:</strong> Assessment Year, Financial Year</li>
+        </ul>
+        <p><em>Upload this document to test the complete NER extraction pipeline!</em></p>
+    </div>
+</body>
+</html>

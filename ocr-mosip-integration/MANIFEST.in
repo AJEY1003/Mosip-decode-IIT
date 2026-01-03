@@ -1,0 +1,13 @@
+include README.md
+include requirements.txt
+include package.json
+include package-lock.json
+recursive-include src *.py
+recursive-include config *.example
+recursive-include docs *.md
+recursive-include scripts *.js
+recursive-exclude tests *
+recursive-exclude output *
+recursive-exclude __pycache__ *
+recursive-exclude *.pyc
+recursive-exclude .git *
