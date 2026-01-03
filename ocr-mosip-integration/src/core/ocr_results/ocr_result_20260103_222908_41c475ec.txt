@@ -1,0 +1,45 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: 41c475ec-9db5-4cdd-9d88-18b3f07fe0e5
+Timestamp: 2026-01-03T22:29:08.937415
+Document Type: aadhaar
+Engines Used: easyocr, trocr, tesseract
+Success: False
+Confidence: 0.000
+Processing Time: 58.42s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+nlll आधार 9n8nIBlBLD ment of India @pou क॰गीछकृlना JlनoLLUIToN  @JmDJ०णILILc Unique Identiication Authority of India Lgl६I  &IFOLUIIEID / Enrollment No 0691/10822/02559 Ajcy K lp" SO Kuriaran, PERUMAL KOIL STREEL WES BANUNAGAR PUDUP VIC: Ambaiiur PO: Ambaiiur, Sub Disirict; Ambaiiur, Districl; Tiruvallur Stale; Iamil Nladu PIN Coae; ६०००५३ Mobile 8015981524 ड्लूै KG२ ?4तa074 .I़lBoT JJpmi नठग्ण Your Aadhaar No 8371 3443 7109 न॰णgl - थJpni   ना॰णgl 9l६DLUT610 Otgu ऊJमI>lBD Government of India FnLock ड् Ajey K Ula zय Bne7 / DOB DBUZUD ई ZUUULNP / Male 8 g 8371 3443 7109 नoणgl थpmij, नoogl JlDLLULITonUD
+
+[Text Length: 607 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+No structured data extracted
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.449
+  Text Length: 607
+
+TROCR:
+  Success: True
+  Confidence: 0.500
+  Text Length: 1
+
+TESSERACT:
+  Success: True
+  Confidence: 0.427
+  Text Length: 492
+
+================================================================================
+END OF RESULTS
+================================================================================

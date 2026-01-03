@@ -77,11 +77,15 @@ ocr-mosip-integration/
 # Navigate to the backend directory
 cd ocr-mosip-integration
 
-# Start the Flask application using app.py
-python src/core/app.py
+# Install dependencies
+pip install -r requirements.txt
+
+# Navigate to the core directory and start the Flask application
+cd src/core
+python app.py
 ```
 
-**Important**: Always use `src/core/app.py` to start the backend server. This is the main Flask application entry point.
+**Important**: Always navigate to `src/core/` directory and run `python app.py` to start the backend server. This is the main Flask application entry point.
 
 The server will start on `http://localhost:5000` by default.
 

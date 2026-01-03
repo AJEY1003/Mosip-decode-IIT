@@ -61,6 +61,11 @@
   --transition-normal: 0.3s ease;
 }
 
+/* Custom gradient utilities */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
 .dark {
   --background: 150 20% 8%;
   --foreground: 0 0% 98%;

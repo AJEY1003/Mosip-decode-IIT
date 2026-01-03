@@ -7,6 +7,8 @@ import logging
 import base64
 import uuid
 from datetime import datetime
+import yaml
+from jsonschema import validate, ValidationError
 
 from ocr_processor import OCRProcessor
 from enhanced_ocr_processor import EnhancedOCRProcessor
@@ -68,6 +70,31 @@ except Exception as e:
 
 # Store extraction results for verification
 extraction_cache = {}
+
+# Load schema definitions for validation
+def load_schema(schema_name):
+    """Load YAML schema for request/response validation"""
+    try:
+        schema_path = os.path.join('models', f'{schema_name}.yaml')
+        with open(schema_path, 'r') as f:
+            schema = yaml.safe_load(f)
+        return schema
+    except Exception as e:
+        logger.warning(f"Could not load schema {schema_name}: {e}")
+        return None
+
+def validate_request_schema(data, schema_name):
+    """Validate request data against schema"""
+    try:
+        schema = load_schema(schema_name)
+        if schema:
+            validate(data, schema)
+            return True, None
+    except ValidationError as e:
+        return False, f"Schema validation failed: {e.message}"
+    except Exception as e:
+        return False, f"Validation error: {str(e)}"
+    return True, None  # No schema available, skip validation
 
 def save_ocr_results_to_file(request_id, ocr_result, document_type, engines_used):
     """
@@ -2682,6 +2709,478 @@ def validate_semantic():
             'status': 'error',
             'message': str(e),
             'score': 0
+        }), 500
+
+@app.route('/api/ner/extract', methods=['POST'])
+def extract_ner():
+    """
+    Extract Named Entity Recognition (NER) from combined text
+    
+    Stoplight Schema: NERExtractionRequest -> NERExtractionResponse
+    
+    Request body JSON:
+    {
+        "text": "string",           // Combined text from multiple documents
+        "field_types": [array],    // Specific field types to extract (optional)
+        "confidence_threshold": number  // Minimum confidence threshold (optional)
+    }
+    
+    Response:
+    {
+        "success": boolean,
+        "entities": [array],       // Extracted entities with confidence scores
+        "field_mapping": object,   // Simple field-to-value mapping
+        "processing_details": object
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate request schema
+        is_valid, validation_error = validate_request_schema(data, 'NERExtractionRequest')
+        if not is_valid:
+            return jsonify({
+                'success': False,
+                'error': validation_error,
+                'entities': [],
+                'field_mapping': {},
+                'timestamp': datetime.now().isoformat()
+            }), 400
+        
+        if not data or 'text' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'text is required',
+                'entities': [],
+                'field_mapping': {},
+                'timestamp': datetime.now().isoformat()
+            }), 400
+        
+        text = data['text']
+        field_types = data.get('field_types', [
+            'name', 'pan', 'aadhaar', 'email', 'mobile', 'date_of_birth',
+            'gross_salary', 'tds_deducted', 'total_income', 'account_number',
+            'ifsc', 'bank_name', 'employer', 'address', 'pincode'
+        ])
+        confidence_threshold = data.get('confidence_threshold', 0.7)
+        
+        logger.info(f"🧠 NER extraction requested for {len(text)} characters")
+        logger.info(f"🎯 Target fields: {field_types}")
+        logger.info(f"📊 Confidence threshold: {confidence_threshold}")
+        
+        # Check if we have the NER extractor available
+        try:
+            from ner_extractor import NERExtractor
+            ner_extractor = NERExtractor()
+            
+            # Extract entities using the NER extractor
+            ner_result = ner_extractor.extract_entities(text, field_types)
+            
+            # Filter entities by confidence threshold
+            filtered_entities = [
+                entity for entity in ner_result.get('entities', [])
+                if entity.get('confidence', 0) >= confidence_threshold
+            ]
+            
+            # Update field mapping to only include high-confidence fields
+            filtered_field_mapping = {
+                field: value for field, value in ner_result.get('field_mapping', {}).items()
+                if any(e['field'] == field and e['confidence'] >= confidence_threshold 
+                      for e in ner_result.get('entities', []))
+            }
+            
+            logger.info(f"✅ NER extraction successful: {len(filtered_entities)} entities above threshold")
+            
+            return jsonify({
+                'success': True,
+                'entities': filtered_entities,
+                'field_mapping': filtered_field_mapping,
+                'processing_details': {
+                    **ner_result.get('processing_details', {}),
+                    'confidence_threshold_applied': confidence_threshold,
+                    'entities_before_filtering': len(ner_result.get('entities', [])),
+                    'entities_after_filtering': len(filtered_entities)
+                },
+                'text_length': len(text),
+                'fields_requested': field_types,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+            
+        except ImportError:
+            logger.warning("NER extractor not available, using regex-based extraction")
+            # Fallback to regex-based extraction
+            entities, field_mapping = extract_entities_with_regex(text, field_types)
+            
+            # Apply confidence threshold
+            filtered_entities = [e for e in entities if e.get('confidence', 0) >= confidence_threshold]
+            filtered_field_mapping = {
+                field: value for field, value in field_mapping.items()
+                if any(e['field'] == field and e['confidence'] >= confidence_threshold for e in entities)
+            }
+            
+            return jsonify({
+                'success': True,
+                'entities': filtered_entities,
+                'field_mapping': filtered_field_mapping,
+                'processing_details': {
+                    'method': 'regex_fallback',
+                    'note': 'Advanced NER not available, used regex patterns',
+                    'confidence_threshold_applied': confidence_threshold,
+                    'entities_before_filtering': len(entities),
+                    'entities_after_filtering': len(filtered_entities)
+                },
+                'text_length': len(text),
+                'fields_requested': field_types,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+            
+    except Exception as e:
+        logger.error(f"NER extraction error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'entities': [],
+            'field_mapping': {},
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+def extract_entities_with_regex(text, field_types):
+    """
+    Fallback regex-based entity extraction
+    """
+    import re
+    
+    entities = []
+    field_mapping = {}
+    
+    # Define regex patterns for different field types
+    patterns = {
+        'name': [
+            r'Name[:\s]+([A-Za-z\s]{2,50})',
+            r'नाम[:\s]+([A-Za-z\s]{2,50})',
+            r'^([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)',
+        ],
+        'pan': [
+            r'PAN[:\s]*([A-Z]{5}[0-9]{4}[A-Z]{1})',
+            r'([A-Z]{5}[0-9]{4}[A-Z]{1})',
+        ],
+        'aadhaar': [
+            r'Aadhaar[:\s]*(\d{4}[\s-]?\d{4}[\s-]?\d{4})',
+            r'आधार[:\s]*(\d{4}[\s-]?\d{4}[\s-]?\d{4})',
+            r'(\d{4}[\s-]\d{4}[\s-]\d{4})',
+        ],
+        'email': [
+            r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})',
+        ],
+        'mobile': [
+            r'Mobile[:\s]*(\+?91[\s-]?[6-9]\d{9})',
+            r'Phone[:\s]*(\+?91[\s-]?[6-9]\d{9})',
+            r'(\+?91[\s-]?[6-9]\d{9})',
+        ],
+        'date_of_birth': [
+            r'DOB[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{4})',
+            r'Date of Birth[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{4})',
+            r'जन्म तिथि[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{4})',
+        ],
+        'gross_salary': [
+            r'Gross Salary[:\s]*₹?[\s]*([0-9,]+)',
+            r'Total Income[:\s]*₹?[\s]*([0-9,]+)',
+        ],
+        'tds_deducted': [
+            r'TDS[:\s]*₹?[\s]*([0-9,]+)',
+            r'Tax Deducted[:\s]*₹?[\s]*([0-9,]+)',
+        ],
+        'account_number': [
+            r'Account[:\s]*(\d{9,18})',
+            r'A/c[:\s]*(\d{9,18})',
+        ],
+        'ifsc': [
+            r'IFSC[:\s]*([A-Z]{4}0[A-Z0-9]{6})',
+        ],
+        'bank_name': [
+            r'Bank[:\s]*([A-Za-z\s]{5,50})',
+        ],
+        'employer': [
+            r'Employer[:\s]*([A-Za-z\s]{5,100})',
+            r'Company[:\s]*([A-Za-z\s]{5,100})',
+        ],
+        'pincode': [
+            r'PIN[:\s]*(\d{6})',
+            r'Pincode[:\s]*(\d{6})',
+        ]
+    }
+    
+    for field_type in field_types:
+        if field_type in patterns:
+            for pattern in patterns[field_type]:
+                matches = re.finditer(pattern, text, re.IGNORECASE | re.MULTILINE)
+                for match in matches:
+                    value = match.group(1).strip()
+                    if value and len(value) > 1:  # Basic validation
+                        entities.append({
+                            'field': field_type,
+                            'value': value,
+                            'confidence': 0.8,  # Default confidence for regex
+                            'start': match.start(1),
+                            'end': match.end(1),
+                            'source': 'regex'
+                        })
+                        
+                        # Use first match for field mapping
+                        if field_type not in field_mapping:
+                            field_mapping[field_type] = value
+                        break
+                
+                # Break after first successful pattern match
+                if field_type in field_mapping:
+                    break
+    
+    return entities, field_mapping
+
+@app.route('/api/form/auto-fill', methods=['POST'])
+def auto_fill_form():
+    """
+    Auto-fill form fields using NER results
+    
+    Request body JSON:
+    {
+        "ner_results": {...},        // NER extraction results
+        "document_sources": {...},   // Source documents for each field
+        "confidence_threshold": 0.7  // Minimum confidence threshold
+    }
+    
+    Response:
+    {
+        "success": boolean,
+        "form_data": {
+            "field_name": {
+                "value": "string",
+                "confidence": number,
+                "source": "string",
+                "verified": boolean
+            }
+        },
+        "summary": {...}
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or 'ner_results' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'ner_results is required',
+                'form_data': {}
+            }), 400
+        
+        ner_results = data['ner_results']
+        document_sources = data.get('document_sources', {})
+        confidence_threshold = data.get('confidence_threshold', 0.7)
+        
+        logger.info(f"🤖 Auto-fill requested with confidence threshold: {confidence_threshold}")
+        
+        form_data = {}
+        entities = ner_results.get('entities', [])
+        field_mapping = ner_results.get('field_mapping', {})
+        
+        # Process entities and create form data
+        for entity in entities:
+            field = entity['field']
+            value = entity['value']
+            confidence = entity.get('confidence', 0.0)
+            source = entity.get('source', 'unknown')
+            
+            # Only include fields that meet confidence threshold
+            if confidence >= confidence_threshold:
+                form_data[field] = {
+                    'value': value,
+                    'confidence': confidence,
+                    'source': source,
+                    'verified': confidence >= 0.9,
+                    'document_source': document_sources.get(field, 'combined')
+                }
+        
+        # Add field mapping data for any missing fields
+        for field, value in field_mapping.items():
+            if field not in form_data:
+                form_data[field] = {
+                    'value': value,
+                    'confidence': 0.8,  # Default confidence for field mapping
+                    'source': 'field_mapping',
+                    'verified': False,
+                    'document_source': document_sources.get(field, 'combined')
+                }
+        
+        # Create summary
+        summary = {
+            'total_fields_found': len(entities),
+            'fields_above_threshold': len(form_data),
+            'verified_fields': len([f for f in form_data.values() if f['verified']]),
+            'average_confidence': sum(f['confidence'] for f in form_data.values()) / len(form_data) if form_data else 0,
+            'confidence_threshold': confidence_threshold
+        }
+        
+        logger.info(f"✅ Auto-fill completed: {len(form_data)} fields populated")
+        
+        return jsonify({
+            'success': True,
+            'form_data': form_data,
+            'summary': summary,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Auto-fill error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'form_data': {},
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+@app.route('/api/documents/combine', methods=['POST'])
+def combine_document_extractions():
+    """
+    Combine multiple document extractions using priority-based merging
+    
+    Request body JSON:
+    {
+        "document_extractions": {
+            "aadhaar": {...},
+            "form16": {...},
+            "preregistration": {...},
+            "bankSlip": {...},
+            "incomeDetails": {...}
+        },
+        "merge_strategy": "priority_based",
+        "field_priorities": {
+            "name": ["aadhaar", "form16", "preregistration"],
+            "pan": ["form16", "preregistration", "aadhaar"]
+        }
+    }
+    
+    Response:
+    {
+        "success": boolean,
+        "combined_data": {...},
+        "merge_details": {...},
+        "conflicts": [...]
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or 'document_extractions' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'document_extractions is required',
+                'combined_data': {}
+            }), 400
+        
+        document_extractions = data['document_extractions']
+        merge_strategy = data.get('merge_strategy', 'priority_based')
+        field_priorities = data.get('field_priorities', {
+            'name': ['aadhaar', 'form16', 'preregistration'],
+            'pan': ['form16', 'preregistration', 'aadhaar'],
+            'aadhaar': ['aadhaar'],
+            'email': ['preregistration', 'form16'],
+            'mobile': ['preregistration', 'aadhaar'],
+            'gross_salary': ['form16', 'bankSlip'],
+            'account_number': ['bankSlip'],
+            'bank_name': ['bankSlip'],
+            'ifsc': ['bankSlip'],
+            'employer': ['form16'],
+            'tds_deducted': ['form16']
+        })
+        
+        logger.info(f"🔗 Combining {len(document_extractions)} document extractions")
+        
+        combined_data = {}
+        merge_details = {}
+        conflicts = []
+        
+        # Get all possible fields from all documents
+        all_fields = set()
+        for doc_type, extraction in document_extractions.items():
+            if extraction and 'structured_data' in extraction:
+                all_fields.update(extraction['structured_data'].keys())
+        
+        # Process each field using priority-based merging
+        for field in all_fields:
+            field_values = {}
+            
+            # Collect values from all documents
+            for doc_type, extraction in document_extractions.items():
+                if extraction and 'structured_data' in extraction:
+                    structured_data = extraction['structured_data']
+                    if field in structured_data and structured_data[field]:
+                        field_values[doc_type] = {
+                            'value': structured_data[field],
+                            'confidence': extraction.get('confidence', 0.8)
+                        }
+            
+            if field_values:
+                # Apply priority-based selection
+                selected_value = None
+                selected_source = None
+                
+                if field in field_priorities:
+                    # Use priority order
+                    for priority_doc in field_priorities[field]:
+                        if priority_doc in field_values:
+                            selected_value = field_values[priority_doc]['value']
+                            selected_source = priority_doc
+                            break
+                
+                if not selected_value:
+                    # Use highest confidence if no priority defined
+                    best_doc = max(field_values.keys(), 
+                                 key=lambda x: field_values[x]['confidence'])
+                    selected_value = field_values[best_doc]['value']
+                    selected_source = best_doc
+                
+                combined_data[field] = selected_value
+                merge_details[field] = {
+                    'selected_from': selected_source,
+                    'available_in': list(field_values.keys()),
+                    'confidence': field_values[selected_source]['confidence']
+                }
+                
+                # Check for conflicts (different values from different sources)
+                unique_values = set(fv['value'] for fv in field_values.values())
+                if len(unique_values) > 1:
+                    conflicts.append({
+                        'field': field,
+                        'values': field_values,
+                        'selected': selected_value,
+                        'selected_from': selected_source
+                    })
+        
+        summary = {
+            'total_fields_combined': len(combined_data),
+            'documents_processed': len(document_extractions),
+            'conflicts_found': len(conflicts),
+            'merge_strategy': merge_strategy
+        }
+        
+        logger.info(f"✅ Document combination completed: {len(combined_data)} fields, {len(conflicts)} conflicts")
+        
+        return jsonify({
+            'success': True,
+            'combined_data': combined_data,
+            'merge_details': merge_details,
+            'conflicts': conflicts,
+            'summary': summary,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Document combination error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'combined_data': {},
+            'timestamp': datetime.now().isoformat()
         }), 500
 
 if __name__ == '__main__':

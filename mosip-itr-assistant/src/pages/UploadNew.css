@@ -1,0 +1,526 @@
+/* ================================Global Reset================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ================================Page Background================================ */
+.upload-documents-container {
+    min-height: 100vh;
+    position: relative;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    /* Main soft green gradient */
+    background: radial-gradient(1200px 600px at 20% 10%,
+        #eef5ea 0%,
+        #dfead9 35%,
+        #c9ddc2 60%,
+        #9fbfa4 100%);
+    overflow-x: hidden;
+    padding-top: 2rem;
+}
+
+/* ================================Subtle Texture Overlay================================ */
+.upload-documents-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(800px 600px at 15% 20%,
+        rgba(255, 255, 255, 0.8),
+        rgba(255, 255, 255, 0.1) 40%,
+        transparent 50%),
+    radial-gradient(700px 500px at 85% 25%,
+        rgba(255, 255, 255, 0.7),
+        rgba(255, 255, 255, 0.1) 35%,
+        transparent 55%),
+    radial-gradient(900px 700px at 35% 85%,
+        rgba(255, 255, 255, 0.6),
+        rgba(255, 255, 255, 0.1) 40%,
+        transparent 60%),
+    radial-gradient(600px 450px at 75% 80%,
+        rgba(255, 255, 255, 0.65),
+        rgba(255, 255, 255, 0.1) 35%,
+        transparent 55%);
+    opacity: 1;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ================================Depth / Vignette Overlay================================ */
+.upload-documents-container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+        rgba(0, 0, 0, 0.04),
+        rgba(0, 0, 0, 0.08));
+    pointer-events: none;
+}
+
+/* ================================Content Wrapper================================ */
+.main-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 24px;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.upload-section {
+    width: 100%;
+}
+
+.upload-title {
+    color: #006400;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.upload-description {
+    color: #555;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* ================================Error Banner================================ */
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.error-banner button {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+/* ================================Upload Cards Grid================================ */
+.upload-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ================================Card Design (Upload Boxes)================================ */
+.upload-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08),
+                0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 280px;
+    border: 2px solid transparent;
+}
+
+.upload-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12),
+                0 4px 10px rgba(0, 0, 0, 0.06);
+    border-color: #6fa67a;
+}
+
+.card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.upload-card h3 {
+    margin: 0.5rem 0;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.card-fields {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    font-style: italic;
+}
+
+.upload-card p {
+    color: #666;
+    font-size: 0.95rem;
+    margin: 1rem 0;
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+/* ================================Upload Area================================ */
+.upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2f80ed, #1c60c7);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin: 1rem 0;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.upload-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(47, 128, 237, 0.35);
+}
+
+.upload-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.uploaded-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+
+.uploaded-status span {
+    font-size: 0.9rem;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upload-card small {
+    color: #6b7280;
+    font-size: 14px;
+    display: block;
+    text-align: center;
+}
+
+/* ================================Additional Documents================================ */
+.additional-docs {
+    margin-top: 3rem;
+    width: 100%;
+}
+
+.additional-title {
+    color: #006400;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+/* ================================Side Panels================================ */
+.side-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+}
+
+.processing-panel, .summary-panel {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08),
+                0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    border: 1px solid #e5e7eb;
+}
+
+.processing-panel:hover, .summary-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12),
+                0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.panel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #eef5ea, #dfead9);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    color: #006400;
+}
+
+.processing-panel h3, .summary-panel h3 {
+    margin: 0 0 1.5rem 0;
+    color: #333;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* ================================OCR Selection================================ */
+.ocr-selection {
+    margin-bottom: 1.5rem;
+}
+
+.setting-title {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem 0;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.radio-label:hover {
+    background: #f9fbf8;
+}
+
+.radio-label input[type="radio"] {
+    margin-right: 0.75rem;
+    accent-color: #2f80ed;
+}
+
+/* ================================Smart Auto-Fill================================ */
+.smart-auto-fill {
+    margin-bottom: 1.5rem;
+}
+
+.smart-auto-fill p:first-child {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.smart-auto-fill p:last-child {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* ================================Summary Stats================================ */
+.summary-stats {
+    margin: 1.5rem 0;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.75rem 0;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.stat:last-child {
+    border-bottom: none;
+}
+
+.stat label {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #006400;
+    font-size: 1.1rem;
+}
+
+/* ================================Secure Processing================================ */
+.secure-processing {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8fffe, #f1f7f0);
+    border: 1px solid #d1fae5;
+    border-radius: 12px;
+}
+
+.security-title {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #065f46;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.secure-processing p:last-child {
+    color: #047857;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* ================================Buttons================================ */
+.panel-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #e9ecef;
+    padding: 12px 22px;
+    border-radius: 12px;
+    cursor: pointer;
+    flex: 1;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: #e9ecef;
+    color: #333;
+    transform: translateY(-1px);
+}
+
+.process-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2f80ed, #1c60c7);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex: 1;
+    min-height: 44px;
+}
+
+.process-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(47, 128, 237, 0.35);
+}
+
+.process-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ================================Loading Spinner================================ */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff40;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ================================Utility================================ */
+.text-muted {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* ================================Responsive Design================================ */
+@media (max-width: 1024px) {
+    .main-content {
+        padding: 32px 20px;
+        gap: 2rem;
+    }
+    
+    .side-panels {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    .processing-panel, .summary-panel {
+        flex: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 24px 16px;
+    }
+    
+    .upload-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .side-panels {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .panel-buttons {
+        flex-direction: column;
+    }
+    
+    .upload-title {
+        font-size: 1.5rem;
+    }
+    
+    .upload-description {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .upload-card {
+        padding: 16px;
+    }
+    
+    .processing-panel, .summary-panel {
+        padding: 16px;
+    }
+    
+    .main-content {
+        padding: 20px 12px;
+    }
+}

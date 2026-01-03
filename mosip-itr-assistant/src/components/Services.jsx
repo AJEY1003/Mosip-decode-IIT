@@ -86,7 +86,7 @@ export function Services() {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[hsl(var(--gov-gold))]/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Header */}
         <motion.div

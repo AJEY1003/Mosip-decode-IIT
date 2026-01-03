@@ -59,7 +59,7 @@ export function NewFooter() {
       <div className="relative z-10">
         
         {/* Main Footer Content */}
-        <div className="container mx-auto px-6 sm:px-8 lg:px-12 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid lg:grid-cols-4 gap-12">
             
             {/* Brand Section */}
@@ -190,7 +190,7 @@ export function NewFooter() {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10">
-          <div className="container mx-auto px-6 sm:px-8 lg:px-12 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               
               {/* Copyright */}
@@ -247,7 +247,7 @@ export function NewFooter() {
           transition={{ duration: 0.6 }}
           className="bg-[hsl(var(--gov-green))]/20 border-t border-[hsl(var(--gov-green))]/30"
         >
-          <div className="container mx-auto px-6 sm:px-8 lg:px-12 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-[hsl(var(--gov-gold))] rounded-full flex items-center justify-center">

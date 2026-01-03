@@ -321,6 +321,71 @@ class APIService {
             body: JSON.stringify(payload)
         });
     }
+
+    /**
+     * Extract Named Entity Recognition (NER) from text
+     * @param {string} text - Combined text from multiple documents
+     * @param {Array} fieldTypes - Specific field types to extract
+     */
+    async extractNER(text, fieldTypes = []) {
+        const payload = {
+            text: text,
+            field_types: fieldTypes.length > 0 ? fieldTypes : [
+                'name', 'pan', 'aadhaar', 'email', 'mobile', 'date_of_birth',
+                'gross_salary', 'tds_deducted', 'total_income', 'account_number',
+                'ifsc', 'bank_name', 'employer', 'address', 'pincode'
+            ]
+        };
+
+        return this.request('/api/ner/extract', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /**
+     * Auto-fill form fields using NER results
+     * @param {Object} nerResults - NER extraction results
+     * @param {Object} documentSources - Source documents for each field
+     */
+    async autoFillForm(nerResults, documentSources = {}) {
+        const payload = {
+            ner_results: nerResults,
+            document_sources: documentSources,
+            confidence_threshold: 0.7
+        };
+
+        return this.request('/api/form/auto-fill', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /**
+     * Combine multiple document extractions
+     * @param {Object} documentExtractions - Object with document type as key and extraction data as value
+     */
+    async combineDocumentExtractions(documentExtractions) {
+        const payload = {
+            document_extractions: documentExtractions,
+            merge_strategy: 'priority_based', // Use priority-based merging
+            field_priorities: {
+                name: ['aadhaar', 'form16', 'preregistration'],
+                pan: ['form16', 'preregistration', 'aadhaar'],
+                aadhaar: ['aadhaar'],
+                email: ['preregistration', 'form16'],
+                mobile: ['preregistration', 'aadhaar'],
+                gross_salary: ['form16', 'bankSlip'],
+                account_number: ['bankSlip'],
+                bank_name: ['bankSlip']
+            }
+        };
+
+        return this.request('/api/documents/combine', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
 }
 
 // Create singleton instance

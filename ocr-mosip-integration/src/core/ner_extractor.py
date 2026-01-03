@@ -46,7 +46,21 @@ class ITRNERExtractor:
                 r'date\s*of\s*birth[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})',
                 r'dob[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})',
                 r'birth\s*date[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})',
-                r'born[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})'
+                r'born[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})',
+                # Additional date formats
+                r'date\s*of\s*birth[:\s]*(\d{1,2}\s+\w+\s+\d{4})',  # 15 March 1990
+                r'dob[:\s]*(\d{1,2}\s+\w+\s+\d{4})',
+                r'birth\s*date[:\s]*(\d{1,2}\s+\w+\s+\d{4})',
+                r'date\s*of\s*birth[:\s]*(\w+\s+\d{1,2},?\s+\d{4})',  # March 15, 1990
+                r'dob[:\s]*(\w+\s+\d{1,2},?\s+\d{4})',
+                r'birth\s*date[:\s]*(\w+\s+\d{1,2},?\s+\d{4})',
+                # Indian format variations
+                r'date\s*of\s*birth[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2})',  # DD/MM/YY
+                r'dob[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2})',
+                # Flexible date patterns
+                r'(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})',  # Generic date pattern
+                r'(\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{4})',  # 15 Jan 1990
+                r'((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{1,2},?\s+\d{4})'  # Jan 15, 1990
             ],
             
             # Financial Information
@@ -55,21 +69,33 @@ class ITRNERExtractor:
                 r'total\s*salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
                 r'annual\s*salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
                 r'salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
-                r'gross\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)'
+                r'gross\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                # Enhanced patterns for different formats
+                r'gross\s+salary\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "Gross Salary ₹ 8,50,000"
+                r'gross\s+income:\s*(\d+(?:,\d+)*(?:\.\d{2})?)',      # "Gross Income: 850,000"
+                r'total\s+income\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "Total Income ₹ 8,50,000"
+                r'₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)'  # Table format
             ],
             
             'tds_deducted': [
-                r'tds\s*deducted[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
-                r'tax\s*deducted[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
-                r'tds[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
-                r'deducted\s*tax[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)'
+                # Most specific patterns first - these should get higher confidence
+                r'tds\s+deducted:\s*रे\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "TDS Deducted: रे 75,000"
+                r'tds\s+deducted:\s*₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "TDS Deducted: ₹ 75,000"
+                # Avoid multiline matches by being more restrictive
+                r'tds\s*deducted[ \t]*:[ \t]*₹?[ \t]*(\d+(?:,\d+)*(?:\.\d{2})?)',  # Same line only
+                r'tax\s*deducted[ \t]*:[ \t]*₹?[ \t]*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'deducted\s*tax[ \t]*:[ \t]*₹?[ \t]*(\d+(?:,\d+)*(?:\.\d{2})?)',
             ],
             
             'total_income': [
                 r'total\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
                 r'gross\s*total\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
                 r'annual\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
-                r'taxable\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)'
+                r'taxable\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                # Enhanced patterns
+                r'total\s+income\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)',   # "Total Income ₹ 8,50,000"
+                r'net\s+income:\s*&\s*(\d+(?:,\d+)*(?:\.\d{2})?)',    # "Net Income: & 7,75,000"
+                r'net\s+income:\s*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',   # "Net Income: 7,75,000"
             ],
             
             # Bank Information
@@ -177,7 +203,8 @@ class ITRNERExtractor:
             'pincode': r'^\d{6}$',
             'account_number': r'^\d{9,18}$',
             'tan': r'^[A-Z]{4}[0-9]{5}[A-Z]{1}$',
-            'cin': r'^[A-Z]{1}[0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$'
+            'cin': r'^[A-Z]{1}[0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$',
+            'date_of_birth': r'^\d{4}-\d{2}-\d{2}$|^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}$|^\d{1,2}\s+\w+\s+\d{4}$'
         }
     
     def extract_structured_data(self, text: str, document_type: str = 'ITR') -> Dict[str, Any]:
@@ -217,7 +244,14 @@ class ITRNERExtractor:
         for field_name, patterns in self.patterns.items():
             result = self._extract_field(clean_text, field_name, patterns)
             if result['value']:
-                extracted_fields[field_name] = result['value']
+                # Apply date normalization for date_of_birth field
+                if field_name == 'date_of_birth':
+                    normalized_date = self._normalize_date(result['value'])
+                    extracted_fields[field_name] = normalized_date
+                    logger.info(f"📅 Date normalized: '{result['value']}' -> '{normalized_date}'")
+                else:
+                    extracted_fields[field_name] = result['value']
+                
                 confidence_scores[field_name] = result['confidence']
                 extraction_metadata.append({
                     'field': field_name,
@@ -419,6 +453,112 @@ class ITRNERExtractor:
         # General validation for other fields
         return 0 < len(value) < 200
     
+    def _normalize_date(self, date_str: str) -> str:
+        """
+        Normalize various date formats to YYYY-MM-DD format
+        Handles multiple input formats commonly found in Indian documents
+        """
+        if not date_str:
+            return date_str
+        
+        # Clean the date string
+        date_str = date_str.strip()
+        
+        # Month name mappings
+        month_names = {
+            'jan': '01', 'january': '01',
+            'feb': '02', 'february': '02',
+            'mar': '03', 'march': '03',
+            'apr': '04', 'april': '04',
+            'may': '05',
+            'jun': '06', 'june': '06',
+            'jul': '07', 'july': '07',
+            'aug': '08', 'august': '08',
+            'sep': '09', 'september': '09',
+            'oct': '10', 'october': '10',
+            'nov': '11', 'november': '11',
+            'dec': '12', 'december': '12'
+        }
+        
+        try:
+            # Pattern 1: DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
+            if re.match(r'\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}', date_str):
+                parts = re.split(r'[\/\-\.]', date_str)
+                day, month, year = parts[0].zfill(2), parts[1].zfill(2), parts[2]
+                return f"{year}-{month}-{day}"
+            
+            # Pattern 2: DD/MM/YY (assuming 20YY for YY < 50, 19YY otherwise)
+            elif re.match(r'\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2}', date_str):
+                parts = re.split(r'[\/\-\.]', date_str)
+                day, month, year = parts[0].zfill(2), parts[1].zfill(2), parts[2]
+                # Convert 2-digit year to 4-digit
+                year_int = int(year)
+                if year_int < 50:
+                    year = f"20{year}"
+                else:
+                    year = f"19{year}"
+                return f"{year}-{month}-{day}"
+            
+            # Pattern 3: DD Month YYYY (15 March 1990)
+            elif re.match(r'\d{1,2}\s+\w+\s+\d{4}', date_str):
+                parts = date_str.split()
+                day = parts[0].zfill(2)
+                month_name = parts[1].lower()
+                year = parts[2]
+                
+                # Convert month name to number
+                for name, num in month_names.items():
+                    if month_name.startswith(name):
+                        month = num
+                        break
+                else:
+                    return date_str  # Return original if month not found
+                
+                return f"{year}-{month}-{day}"
+            
+            # Pattern 4: Month DD, YYYY (March 15, 1990)
+            elif re.match(r'\w+\s+\d{1,2},?\s+\d{4}', date_str):
+                # Remove comma if present
+                date_str = date_str.replace(',', '')
+                parts = date_str.split()
+                month_name = parts[0].lower()
+                day = parts[1].zfill(2)
+                year = parts[2]
+                
+                # Convert month name to number
+                for name, num in month_names.items():
+                    if month_name.startswith(name):
+                        month = num
+                        break
+                else:
+                    return date_str  # Return original if month not found
+                
+                return f"{year}-{month}-{day}"
+            
+            # Pattern 5: DD Mon YYYY (15 Jan 1990)
+            elif re.match(r'\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{4}', date_str.lower()):
+                parts = date_str.split()
+                day = parts[0].zfill(2)
+                month_name = parts[1].lower()
+                year = parts[2]
+                
+                # Convert month name to number
+                for name, num in month_names.items():
+                    if month_name.startswith(name):
+                        month = num
+                        break
+                else:
+                    return date_str  # Return original if month not found
+                
+                return f"{year}-{month}-{day}"
+            
+            # If no pattern matches, return original
+            return date_str
+            
+        except (ValueError, IndexError) as e:
+            logger.warning(f"Date normalization failed for '{date_str}': {e}")
+            return date_str
+    
     def get_field_mapping_for_form(self, form_type: str) -> List[str]:
         """Get relevant fields for different form types"""
         mappings = {
@@ -430,3 +570,242 @@ class ITRNERExtractor:
         }
         
         return mappings.get(form_type, list(self.patterns.keys()))
+
+
+class NERExtractor:
+    """
+    Enhanced NER Extractor for multi-document processing
+    Supports combining data from multiple document types
+    """
+    
+    def __init__(self):
+        self.itr_extractor = ITRNERExtractor()
+        
+        # Document type specific field priorities
+        self.document_field_priorities = {
+            'aadhaar': ['name', 'aadhaar', 'date_of_birth', 'address', 'pincode', 'mobile'],
+            'form16': ['name', 'pan', 'employer', 'gross_salary', 'tds_deducted', 'financial_year', 'assessment_year', 'tan'],
+            'preregistration': ['name', 'pan', 'email', 'mobile', 'assessment_year'],
+            'bankSlip': ['account_number', 'ifsc', 'bank_name', 'gross_salary'],
+            'incomeDetails': ['total_income', 'gross_salary', 'tds_deducted', 'other_income']
+        }
+    
+    def extract_entities(self, text: str, field_types: List[str] = None) -> Dict[str, Any]:
+        """
+        Extract entities from combined text using NER patterns
+        
+        Args:
+            text: Combined text from multiple documents
+            field_types: Specific field types to extract
+            
+        Returns:
+            Dictionary with entities, field mapping, and processing details
+        """
+        logger.info(f"🧠 Multi-document NER extraction starting")
+        logger.info(f"📄 Text length: {len(text)} characters")
+        logger.info(f"🎯 Target fields: {field_types or 'all'}")
+        
+        # Use ITR extractor for the heavy lifting
+        extraction_result = self.itr_extractor.extract_structured_data(text, 'Multi-Document')
+        
+        extracted_fields = extraction_result.get('extracted_fields', {})
+        confidence_scores = extraction_result.get('confidence_scores', {})
+        
+        # Filter by requested field types if specified
+        if field_types:
+            extracted_fields = {k: v for k, v in extracted_fields.items() if k in field_types}
+            confidence_scores = {k: v for k, v in confidence_scores.items() if k in field_types}
+        
+        # Convert to entities format expected by the API
+        entities = []
+        for field, value in extracted_fields.items():
+            entities.append({
+                'field': field,
+                'value': value,
+                'confidence': confidence_scores.get(field, 0.8),
+                'start': 0,  # Would need more complex logic to find exact positions
+                'end': len(value),
+                'source': 'ner_pattern'
+            })
+        
+        # Create field mapping
+        field_mapping = extracted_fields.copy()
+        
+        # Processing details
+        processing_details = {
+            'method': 'enhanced_ner',
+            'extractor_used': 'ITRNERExtractor',
+            'total_patterns_tried': extraction_result.get('metadata', {}).get('total_patterns_tried', 0),
+            'fields_extracted': len(extracted_fields),
+            'overall_confidence': extraction_result.get('overall_confidence', 0.0),
+            'extraction_timestamp': extraction_result.get('metadata', {}).get('extraction_timestamp')
+        }
+        
+        logger.info(f"✅ Multi-document NER extraction completed")
+        logger.info(f"   📊 Entities found: {len(entities)}")
+        logger.info(f"   🎯 Field mapping: {len(field_mapping)} fields")
+        logger.info(f"   📈 Overall confidence: {processing_details['overall_confidence']:.2f}")
+        
+        return {
+            'entities': entities,
+            'field_mapping': field_mapping,
+            'processing_details': processing_details
+        }
+    
+    def extract_from_document_type(self, text: str, document_type: str) -> Dict[str, Any]:
+        """
+        Extract entities optimized for specific document type
+        
+        Args:
+            text: Text from specific document
+            document_type: Type of document (aadhaar, form16, etc.)
+            
+        Returns:
+            Extraction results optimized for document type
+        """
+        # Get priority fields for this document type
+        priority_fields = self.document_field_priorities.get(document_type, [])
+        
+        # Extract using standard method
+        result = self.extract_entities(text, priority_fields)
+        
+        # Add document type context
+        result['processing_details']['document_type'] = document_type
+        result['processing_details']['priority_fields'] = priority_fields
+        
+        return result
+    
+    def combine_extractions(self, document_extractions: Dict[str, Dict]) -> Dict[str, Any]:
+        """
+        Combine extractions from multiple documents with intelligent merging
+        
+        Args:
+            document_extractions: Dict with document type as key and extraction results as value
+            
+        Returns:
+            Combined extraction results
+        """
+        logger.info(f"🔗 Combining extractions from {len(document_extractions)} documents")
+        
+        combined_entities = []
+        combined_field_mapping = {}
+        merge_details = {}
+        conflicts = []
+        
+        # Priority order for different fields
+        field_priorities = {
+            'name': ['aadhaar', 'form16', 'preregistration', 'bankSlip', 'incomeDetails'],
+            'pan': ['form16', 'preregistration', 'aadhaar'],
+            'aadhaar': ['aadhaar'],
+            'email': ['preregistration', 'form16'],
+            'mobile': ['preregistration', 'aadhaar'],
+            'gross_salary': ['form16', 'bankSlip'],
+            'account_number': ['bankSlip'],
+            'bank_name': ['bankSlip'],
+            'ifsc': ['bankSlip'],
+            'employer': ['form16'],
+            'tds_deducted': ['form16'],
+            'total_income': ['incomeDetails', 'form16'],
+            'address': ['aadhaar', 'preregistration'],
+            'pincode': ['aadhaar', 'preregistration'],
+            'date_of_birth': ['aadhaar', 'preregistration']
+        }
+        
+        # Collect all unique fields
+        all_fields = set()
+        for doc_type, extraction in document_extractions.items():
+            if 'field_mapping' in extraction:
+                all_fields.update(extraction['field_mapping'].keys())
+        
+        # Process each field with priority-based selection
+        for field in all_fields:
+            field_candidates = {}
+            
+            # Collect candidates from all documents
+            for doc_type, extraction in document_extractions.items():
+                field_mapping = extraction.get('field_mapping', {})
+                if field in field_mapping:
+                    # Find corresponding entity for confidence score
+                    confidence = 0.8  # Default
+                    for entity in extraction.get('entities', []):
+                        if entity['field'] == field:
+                            confidence = entity['confidence']
+                            break
+                    
+                    field_candidates[doc_type] = {
+                        'value': field_mapping[field],
+                        'confidence': confidence
+                    }
+            
+            if field_candidates:
+                # Select best candidate based on priority
+                selected_doc = None
+                selected_value = None
+                
+                # Use priority order if defined
+                if field in field_priorities:
+                    for priority_doc in field_priorities[field]:
+                        if priority_doc in field_candidates:
+                            selected_doc = priority_doc
+                            selected_value = field_candidates[priority_doc]['value']
+                            break
+                
+                # Fallback to highest confidence
+                if not selected_value:
+                    selected_doc = max(field_candidates.keys(), 
+                                     key=lambda x: field_candidates[x]['confidence'])
+                    selected_value = field_candidates[selected_doc]['value']
+                
+                # Add to combined results
+                combined_field_mapping[field] = selected_value
+                combined_entities.append({
+                    'field': field,
+                    'value': selected_value,
+                    'confidence': field_candidates[selected_doc]['confidence'],
+                    'start': 0,
+                    'end': len(selected_value),
+                    'source': f'combined_from_{selected_doc}'
+                })
+                
+                merge_details[field] = {
+                    'selected_from': selected_doc,
+                    'available_in': list(field_candidates.keys()),
+                    'confidence': field_candidates[selected_doc]['confidence']
+                }
+                
+                # Check for conflicts
+                unique_values = set(candidate['value'] for candidate in field_candidates.values())
+                if len(unique_values) > 1:
+                    conflicts.append({
+                        'field': field,
+                        'values': field_candidates,
+                        'selected': selected_value,
+                        'selected_from': selected_doc
+                    })
+        
+        # Calculate overall confidence
+        confidences = [entity['confidence'] for entity in combined_entities]
+        overall_confidence = sum(confidences) / len(confidences) if confidences else 0.0
+        
+        processing_details = {
+            'method': 'multi_document_combination',
+            'documents_processed': len(document_extractions),
+            'total_fields_combined': len(combined_field_mapping),
+            'conflicts_found': len(conflicts),
+            'overall_confidence': overall_confidence,
+            'merge_strategy': 'priority_based',
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        logger.info(f"✅ Document combination completed")
+        logger.info(f"   📊 Fields combined: {len(combined_field_mapping)}")
+        logger.info(f"   ⚠️  Conflicts found: {len(conflicts)}")
+        logger.info(f"   📈 Overall confidence: {overall_confidence:.2f}")
+        
+        return {
+            'entities': combined_entities,
+            'field_mapping': combined_field_mapping,
+            'processing_details': processing_details,
+            'merge_details': merge_details,
+            'conflicts': conflicts
+        }

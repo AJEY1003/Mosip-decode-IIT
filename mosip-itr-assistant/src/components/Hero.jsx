@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Menu, X, Shield, FileCheck, Clock, ChevronRight, BadgeCheck, Landmark, Upload, Database, ShieldCheck, Wallet } from 'lucide-react'
+import { Menu, X, Shield, FileCheck, Clock, ChevronRight, BadgeCheck, Landmark, Upload, Database, ShieldCheck, Wallet, BarChart3 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -60,7 +60,7 @@ export function Hero() {
         className="fixed top-0 left-0 right-0 w-full z-50"
       >
         <div 
-          className={`w-full px-6 sm:px-8 lg:px-16 py-4 transition-all duration-500 ${
+          className={`w-full px-4 sm:px-6 lg:px-8 py-4 transition-all duration-500 ${
             isScrolled 
               ? 'bg-white/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] border-b border-[hsl(var(--border))]' 
               : 'bg-transparent'
@@ -183,7 +183,7 @@ export function Hero() {
       )}
 
       {/* Hero Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pt-32 lg:pt-40 pb-24">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 lg:pt-40 pb-24">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center min-h-[calc(100vh-10rem)]">
           {/* Left Content */}
           <motion.div
@@ -248,6 +248,15 @@ export function Hero() {
                 <Upload className="w-5 h-5" />
                 Start Processing
                 <ChevronRight className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/dashboard-demo')}
+                className="bg-[hsl(var(--gov-green))] text-white font-semibold px-8 py-4 rounded-xl text-lg shadow-[0_8px_30px_rgba(16,185,129,0.4)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.5)] transition-all flex items-center gap-2"
+              >
+                <BarChart3 className="w-5 h-5" />
+                View Dashboard Demo
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.03, y: -2 }}

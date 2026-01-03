@@ -28,9 +28,24 @@ class NERExtractor {
             ],
             
             date_of_birth: [
-                /date\s*of\s*birth[:\s]*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/i,
-                /dob[:\s]*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/i,
-                /birth\s*date[:\s]*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/i
+                /date\s*of\s*birth[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})/i,
+                /dob[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})/i,
+                /birth\s*date[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})/i,
+                /born[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})/i,
+                // Additional date formats
+                /date\s*of\s*birth[:\s]*(\d{1,2}\s+\w+\s+\d{4})/i,  // 15 March 1990
+                /dob[:\s]*(\d{1,2}\s+\w+\s+\d{4})/i,
+                /birth\s*date[:\s]*(\d{1,2}\s+\w+\s+\d{4})/i,
+                /date\s*of\s*birth[:\s]*(\w+\s+\d{1,2},?\s+\d{4})/i,  // March 15, 1990
+                /dob[:\s]*(\w+\s+\d{1,2},?\s+\d{4})/i,
+                /birth\s*date[:\s]*(\w+\s+\d{1,2},?\s+\d{4})/i,
+                // Indian format variations
+                /date\s*of\s*birth[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2})/i,  // DD/MM/YY
+                /dob[:\s]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2})/i,
+                // Flexible date patterns
+                /(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4})/g,  // Generic date pattern
+                /(\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{4})/gi,  // 15 Jan 1990
+                /((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{1,2},?\s+\d{4})/gi  // Jan 15, 1990
             ],
             
             // Financial Information
@@ -38,19 +53,32 @@ class NERExtractor {
                 /gross\s*salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
                 /total\s*salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
                 /annual\s*salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
-                /salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i
+                /salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /gross\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                // Enhanced patterns for different formats
+                /gross\s+salary\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,  // "Gross Salary ₹ 8,50,000"
+                /gross\s+income:\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,      // "Gross Income: 850,000"
+                /total\s+income\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i   // "Total Income ₹ 8,50,000"
             ],
             
             tds_deducted: [
                 /tds\s*deducted[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
                 /tax\s*deducted[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
-                /tds[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i
+                /tds[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                // Enhanced patterns
+                /tds\s+deducted\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,   // "TDS Deducted ₹ 75,000"
+                /tds\s+deducted:\s*रे\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i, // "TDS Deducted: रे 75,000"
+                /tds\s+deducted:\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i       // "TDS Deducted: 75,000"
             ],
             
             total_income: [
                 /total\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
                 /gross\s*total\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
-                /annual\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i
+                /annual\s*income[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                // Enhanced patterns
+                /total\s+income\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,   // "Total Income ₹ 8,50,000"
+                /net\s+income:\s*&\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,    // "Net Income: & 7,75,000"
+                /net\s+income:\s*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i    // "Net Income: 7,75,000"
             ],
             
             // Bank Information
@@ -233,35 +261,138 @@ class NERExtractor {
             case 'employer':
             case 'bank_name':
                 return value.replace(/\s+/g, ' ').replace(/[^\w\s&\.]/g, '');
-                
+            
+            case 'date_of_birth':
+                return this.normalizeDate(value);
+            
             case 'pan':
-                return value.toUpperCase().replace(/\s/g, '');
-                
+                return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
             case 'aadhaar':
-                return value.replace(/\s/g, '').replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3');
-                
+                return value.replace(/[^\d\s]/g, '').replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3');
+            
             case 'ifsc':
-                return value.toUpperCase().replace(/\s/g, '');
-                
+                return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
             case 'mobile':
-                return value.replace(/\D/g, '').replace(/^91/, '+91 ');
-                
+                return value.replace(/[^\d+]/g, '');
+            
             case 'email':
                 return value.toLowerCase();
-                
+            
             case 'gross_salary':
             case 'tds_deducted':
             case 'total_income':
-                return value.replace(/[₹,\s]/g, '');
-                
-            case 'account_number':
-                return value.replace(/\D/g, '');
-                
-            case 'pincode':
-                return value.replace(/\D/g, '');
-                
+                return value.replace(/[^\d.,]/g, '');
+            
             default:
                 return value;
+        }
+    }
+    
+    /**
+     * Normalize various date formats to YYYY-MM-DD format
+     * Handles multiple input formats commonly found in Indian documents
+     */
+    normalizeDate(dateStr) {
+        if (!dateStr) return dateStr;
+        
+        // Clean the date string
+        dateStr = dateStr.trim();
+        
+        // Month name mappings
+        const monthNames = {
+            'jan': '01', 'january': '01',
+            'feb': '02', 'february': '02',
+            'mar': '03', 'march': '03',
+            'apr': '04', 'april': '04',
+            'may': '05',
+            'jun': '06', 'june': '06',
+            'jul': '07', 'july': '07',
+            'aug': '08', 'august': '08',
+            'sep': '09', 'september': '09',
+            'oct': '10', 'october': '10',
+            'nov': '11', 'november': '11',
+            'dec': '12', 'december': '12'
+        };
+        
+        try {
+            // Pattern 1: DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
+            if (/\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}/.test(dateStr)) {
+                const parts = dateStr.split(/[\/\-\.]/);
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                const year = parts[2];
+                return `${year}-${month}-${day}`;
+            }
+            
+            // Pattern 2: DD/MM/YY (assuming 20YY for YY < 50, 19YY otherwise)
+            else if (/\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2}/.test(dateStr)) {
+                const parts = dateStr.split(/[\/\-\.]/);
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                let year = parseInt(parts[2]);
+                // Convert 2-digit year to 4-digit
+                year = year < 50 ? `20${parts[2]}` : `19${parts[2]}`;
+                return `${year}-${month}-${day}`;
+            }
+            
+            // Pattern 3: DD Month YYYY (15 March 1990)
+            else if (/\d{1,2}\s+\w+\s+\d{4}/.test(dateStr)) {
+                const parts = dateStr.split(/\s+/);
+                const day = parts[0].padStart(2, '0');
+                const monthName = parts[1].toLowerCase();
+                const year = parts[2];
+                
+                // Convert month name to number
+                for (const [name, num] of Object.entries(monthNames)) {
+                    if (monthName.startsWith(name)) {
+                        return `${year}-${num}-${day}`;
+                    }
+                }
+                return dateStr; // Return original if month not found
+            }
+            
+            // Pattern 4: Month DD, YYYY (March 15, 1990)
+            else if (/\w+\s+\d{1,2},?\s+\d{4}/.test(dateStr)) {
+                // Remove comma if present
+                const cleanStr = dateStr.replace(',', '');
+                const parts = cleanStr.split(/\s+/);
+                const monthName = parts[0].toLowerCase();
+                const day = parts[1].padStart(2, '0');
+                const year = parts[2];
+                
+                // Convert month name to number
+                for (const [name, num] of Object.entries(monthNames)) {
+                    if (monthName.startsWith(name)) {
+                        return `${year}-${num}-${day}`;
+                    }
+                }
+                return dateStr; // Return original if month not found
+            }
+            
+            // Pattern 5: DD Mon YYYY (15 Jan 1990)
+            else if (/\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{4}/i.test(dateStr)) {
+                const parts = dateStr.split(/\s+/);
+                const day = parts[0].padStart(2, '0');
+                const monthName = parts[1].toLowerCase();
+                const year = parts[2];
+                
+                // Convert month name to number
+                for (const [name, num] of Object.entries(monthNames)) {
+                    if (monthName.startsWith(name)) {
+                        return `${year}-${num}-${day}`;
+                    }
+                }
+                return dateStr; // Return original if month not found
+            }
+            
+            // If no pattern matches, return original
+            return dateStr;
+            
+        } catch (error) {
+            console.warn(`Date normalization failed for '${dateStr}':`, error);
+            return dateStr;
         }
     }
     

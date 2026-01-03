@@ -1,0 +1,99 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: 7d5e3bca-14d3-4765-bb1d-26c65f3ce126
+Timestamp: 2026-01-03T22:44:02.157106
+Document Type: preregistration
+Engines Used: easyocr, trocr, tesseract
+Success: False
+Confidence: 0.000
+Processing Time: 46.78s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+INCOME TAX RETURN - ITR-1 (SAHAJ)
+Assessment Year: 2024-25
+
+Financial Year: 2023-24
+
+PERSONAL INFORMATION
+
+Name: Rajesh Kumar Sharma
+
+PAN: ABCDE1234F
+
+Aadhaar Number: 1234 5678 9012
+
+Date of Birth: 15/03/1985
+
+Mobile Number: +91 9876543210
+
+Email Address: rajesh.sharma@email.com
+Address: 123 MG Road, Koramangala, Bangalore, Karnataka
+PIN Code: 560001
+
+EMPLOYMENT DETAILS
+
+Employer: Tech Solutions Private Limited
+Employer TAN: BLRA12345B
+Designation: Senior Software Engineer
+INCOME DETAILS
+
+Gross Salary: रू 12,00,000
+
+TDS Deducted: % 1,50,000
+
+Total Income: & 11,47,500
+
+BANK DETAILS FOR REFUND
+
+Bank Name: State Bank of India
+
+Account Number: 123456789012
+
+IFSC Code: SBINO001234
+
+Account Type: Savings Account
+DECLARATION
+
+1, Rajesh Kumar Sharma, solemnly declare that the information given in this return is correct and
+complete.
+
+Place: Bangalore
+
+Date: 02/01/2026
+
+Signature: Rajesh Kumar Sharma
+
+PAN: ABCDE1234F
+
+[Text Length: 921 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+No structured data extracted
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.574
+  Text Length: 894
+
+TROCR:
+  Success: True
+  Confidence: 0.700
+  Text Length: 17
+
+TESSERACT:
+  Success: True
+  Confidence: 0.920
+  Text Length: 921
+
+================================================================================
+END OF RESULTS
+================================================================================

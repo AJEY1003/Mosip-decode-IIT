@@ -138,3 +138,45 @@
 .text-success {
     color: #28a745;
 }
+
+/* Compact Mode Styles */
+.file-upload-container.compact {
+    width: 100%;
+}
+
+.drop-zone.compact {
+    padding: 1.5rem 1rem;
+    min-height: 120px;
+}
+
+.icon-wrapper.compact {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0.25rem;
+}
+
+.drop-content p.compact {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.file-meta.compact {
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+}
+
+.file-preview.compact {
+    padding: 0.75rem;
+}
+
+.file-preview.compact .file-info-row {
+    margin-bottom: 0.75rem;
+}
+
+.file-name.compact {
+    font-size: 0.8rem;
+}
+
+.file-size.compact {
+    font-size: 0.7rem;
+}

@@ -6,10 +6,11 @@ import './FileUpload.css';
 
 const FileUpload = ({
     label = "Upload Document",
-    accept = ".pdf",
+    accept = ".pdf,.jpg,.jpeg,.png",
     maxSize = "10MB",
     onUpload,
-    helperText
+    helperText,
+    compact = false
 }) => {
     const [dragActive, setDragActive] = useState(false);
     const [file, setFile] = useState(null);
@@ -66,16 +67,18 @@ const FileUpload = ({
     };
 
     return (
-        <div className="file-upload-container">
-            <div className="upload-label">
-                <h3>{label}</h3>
-                {helperText && <p>{helperText}</p>}
-            </div>
+        <div className={`file-upload-container ${compact ? 'compact' : ''}`}>
+            {!compact && (
+                <div className="upload-label">
+                    <h3>{label}</h3>
+                    {helperText && <p>{helperText}</p>}
+                </div>
+            )}
 
             <AnimatePresence mode='wait'>
                 {!file ? (
                     <motion.div
-                        className={`drop-zone ${dragActive ? 'active' : ''}`}
+                        className={`drop-zone ${dragActive ? 'active' : ''} ${compact ? 'compact' : ''}`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
                         onDragOver={handleDrag}
@@ -94,16 +97,23 @@ const FileUpload = ({
                             onChange={handleChange}
                         />
                         <div className="drop-content">
-                            <div className="icon-wrapper">
-                                <Upload size={32} />
+                            <div className={`icon-wrapper ${compact ? 'compact' : ''}`}>
+                                <Upload size={compact ? 20 : 32} />
                             </div>
-                            <p>Drag & Drop your file here or <span>Browse</span></p>
-                            <span className="file-meta">Supports {accept} (Max {maxSize})</span>
+                            <p className={compact ? 'compact' : ''}>
+                                {compact ? 'Click to upload' : 'Drag & Drop your file here or '}
+                                {!compact && <span>Browse</span>}
+                            </p>
+                            {helperText && (
+                                <span className={`file-meta ${compact ? 'compact' : ''}`}>
+                                    {compact ? helperText : `Supports ${accept} (Max ${maxSize})`}
+                                </span>
+                            )}
                         </div>
                     </motion.div>
                 ) : (
                     <motion.div
-                        className="file-preview"
+                        className={`file-preview ${compact ? 'compact' : ''}`}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -111,14 +121,14 @@ const FileUpload = ({
                     >
                         <div className="file-info-row">
                             <div className="file-icon">
-                                <FileText size={24} />
+                                <FileText size={compact ? 16 : 24} />
                             </div>
                             <div className="file-details">
-                                <span className="file-name">{file.name}</span>
-                                <span className="file-size">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className={`file-name ${compact ? 'compact' : ''}`}>{file.name}</span>
+                                <span className={`file-size ${compact ? 'compact' : ''}`}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                             </div>
                             <div className="file-status">
-                                {status === 'success' && <CheckCircle className="text-success" size={20} />}
+                                {status === 'success' && <CheckCircle className="text-success" size={compact ? 16 : 20} />}
                             </div>
                         </div>
 

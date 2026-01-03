@@ -52,7 +52,25 @@ const ITRFilingPage = () => {
 
     if (submitted) {
         return (
-            <div className="container page-wrapper flex-center">
+            <div className="relative min-h-screen w-full overflow-hidden">
+                {/* Dark gradient background with texture */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--gov-navy))] via-[hsl(var(--gov-green-dark))] to-[hsl(var(--gov-green))]" />
+                
+                {/* Subtle grid pattern */}
+                <div 
+                    className="absolute inset-0 opacity-[0.03]"
+                    style={{
+                        backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                        backgroundSize: '40px 40px'
+                    }}
+                />
+                
+                {/* Radial glow accent */}
+                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[hsl(var(--gov-gold))] opacity-[0.08] blur-[150px] rounded-full -translate-y-1/2 translate-x-1/3" />
+                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[hsl(var(--gov-green-light))] opacity-[0.1] blur-[120px] rounded-full translate-y-1/2 -translate-x-1/3" />
+
+                <div className="relative z-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex items-center justify-center min-h-screen">
                 <motion.div
                     className="success-state"
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -67,12 +85,32 @@ const ITRFilingPage = () => {
                         <Button>Return to Home</Button>
                     </NavLink>
                 </motion.div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="container page-wrapper">
+        <div className="relative min-h-screen w-full overflow-hidden">
+            {/* Dark gradient background with texture */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--gov-navy))] via-[hsl(var(--gov-green-dark))] to-[hsl(var(--gov-green))]" />
+            
+            {/* Subtle grid pattern */}
+            <div 
+                className="absolute inset-0 opacity-[0.03]"
+                style={{
+                    backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                    backgroundSize: '40px 40px'
+                }}
+            />
+            
+            {/* Radial glow accent */}
+            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[hsl(var(--gov-gold))] opacity-[0.08] blur-[150px] rounded-full -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[hsl(var(--gov-green-light))] opacity-[0.1] blur-[120px] rounded-full translate-y-1/2 -translate-x-1/3" />
+
+            <div className="relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -127,6 +165,8 @@ const ITRFilingPage = () => {
                     </Card>
                 </div>
             </motion.div>
+                </div>
+            </div>
         </div>
     );
 };
