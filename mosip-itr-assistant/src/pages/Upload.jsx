@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
     FileText, ArrowRight, ArrowLeft, Zap, Settings, Upload, Shield, Database, 
     CheckCircle, AlertCircle, X, Cloud, Lock, CreditCard, Building, User, 
-    Receipt, DollarSign, FileCheck, Sparkles, Star, TrendingUp, Activity
+    Receipt, DollarSign, FileCheck, Sparkles, Star, TrendingUp, Activity,
+    QrCode, Download, Copy
 } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import Button from '../components/Button';
@@ -19,6 +20,8 @@ const UploadPage = () => {
     const [processingDetails, setProcessingDetails] = useState(null);
     const [extractedTexts, setExtractedTexts] = useState({});
     const [combinedData, setCombinedData] = useState(null);
+    const [qrCodeData, setQrCodeData] = useState(null);
+    const [showQRCode, setShowQRCode] = useState(false);
     
     // Multi-document state
     const [uploadedDocuments, setUploadedDocuments] = useState({
@@ -190,6 +193,23 @@ const UploadPage = () => {
         }
     };
 
+    // Generate QR code from extracted documents
+    const generateQRCode = async () => {
+        try {
+            console.log('🔄 Generating QR code from extracted documents...');
+            
+            // Generate QR code with all document data
+            const qrResult = await apiService.generateDocumentsQR(extractedTexts);
+            console.log('✅ QR Code generated:', qrResult);
+            
+            return qrResult;
+            
+        } catch (error) {
+            console.error('❌ Failed to generate QR code:', error);
+            throw error;
+        }
+    };
+
     // Process all uploaded documents
     const handleProcessAllDocuments = async () => {
         const uploadedFiles = Object.entries(uploadedDocuments).filter(([_, file]) => file !== null);
@@ -203,6 +223,7 @@ const UploadPage = () => {
         setError(null);
         setExtractedTexts({});
         setCombinedData(null);
+        setQrCodeData(null);
 
         try {
             console.log(`🚀 Processing ${uploadedFiles.length} documents...`);
@@ -218,20 +239,12 @@ const UploadPage = () => {
             // Combine texts and apply NER
             const combinedResult = await combineAndProcessTexts();
             
-            // Navigate to forms page with multi-document data
-            navigate('/forms', { 
-                state: { 
-                    multiDocumentData: extractedTexts, // Pass the individual document extractions
-                    extractedData: combinedResult, // Keep for backward compatibility
-                    uploadedDocuments: uploadedDocuments,
-                    processingDetails: {
-                        ...processingDetails,
-                        documents_processed: uploadedFiles.length,
-                        used_enhanced_ocr: useEnhancedOCR
-                    },
-                    autoFillEnabled: true
-                } 
-            });
+            // Generate QR code with extracted data
+            const qrResult = await generateQRCode();
+            setQrCodeData(qrResult);
+            setShowQRCode(true);
+            
+            console.log('✅ All processing completed successfully');
             
         } catch (error) {
             console.error('❌ Document processing failed:', error);
@@ -649,6 +662,36 @@ const UploadPage = () => {
                                         </div>
                                     </div>
                                 )}
+
+                                {qrCodeData && (
+                                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                        <div className="flex items-center gap-2 text-blue-700 font-semibold mb-3">
+                                            <QrCode className="w-5 h-5" />
+                                            ITR QR Code Generated
+                                        </div>
+                                        <div className="text-sm text-blue-600 mb-3">
+                                            <div>Taxpayer: {qrCodeData.analysis_summary?.taxpayer_name}</div>
+                                            <div>Total Income: ₹{qrCodeData.analysis_summary?.total_income?.toLocaleString()}</div>
+                                            <div>Expected Refund: ₹{qrCodeData.analysis_summary?.refund_amount?.toLocaleString()}</div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                onClick={() => setShowQRCode(true)}
+                                                className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg"
+                                            >
+                                                <QrCode className="w-3 h-3 mr-1" />
+                                                View QR Code
+                                            </Button>
+                                            <Button
+                                                onClick={() => navigate('/itr-filing')}
+                                                className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg"
+                                            >
+                                                <ArrowRight className="w-3 h-3 mr-1" />
+                                                Go to ITR Filing
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -734,6 +777,109 @@ const UploadPage = () => {
                                     </div>
                                 )}
                             </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* QR Code Modal */}
+            <AnimatePresence>
+                {showQRCode && qrCodeData && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowQRCode(false)}
+                    >
+                        <motion.div
+                            className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-[hsl(var(--foreground))]">ITR QR Code</h3>
+                                <button
+                                    onClick={() => setShowQRCode(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* QR Code Image */}
+                            <div className="mb-6">
+                                <img 
+                                    src={qrCodeData.qr_code?.qr_image} 
+                                    alt="ITR QR Code"
+                                    className="w-64 h-64 mx-auto border-2 border-gray-200 rounded-lg"
+                                />
+                            </div>
+
+                            {/* QR Code Summary */}
+                            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                                <h4 className="font-semibold text-gray-800 mb-2">ITR Summary</h4>
+                                <div className="space-y-1 text-sm text-gray-600">
+                                    <div className="flex justify-between">
+                                        <span>Taxpayer:</span>
+                                        <span className="font-medium">{qrCodeData.analysis_summary?.taxpayer_name}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Total Income:</span>
+                                        <span className="font-medium">₹{qrCodeData.analysis_summary?.total_income?.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Tax Regime:</span>
+                                        <span className="font-medium">{qrCodeData.analysis_summary?.recommended_regime?.toUpperCase()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Expected Refund:</span>
+                                        <span className="font-medium text-green-600">₹{qrCodeData.analysis_summary?.refund_amount?.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3">
+                                <Button
+                                    onClick={() => {
+                                        const link = document.createElement('a');
+                                        link.href = qrCodeData.qr_code?.qr_image;
+                                        link.download = 'itr-qr-code.png';
+                                        link.click();
+                                    }}
+                                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Download
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(qrCodeData.qr_code?.qr_data);
+                                        alert('QR data copied to clipboard!');
+                                    }}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                    Copy Data
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        setShowQRCode(false);
+                                        navigate('/itr-filing');
+                                    }}
+                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+                                >
+                                    <ArrowRight className="w-4 h-4" />
+                                    File ITR
+                                </Button>
+                            </div>
+
+                            <p className="text-xs text-gray-500 mt-4">
+                                Use this QR code in the ITR Filing section to auto-fill your tax return form.
+                            </p>
                         </motion.div>
                     </motion.div>
                 )}
