@@ -1,0 +1,117 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: 4086b5ef-05b6-49e4-9f32-e858620925f7
+Timestamp: 2026-01-04T13:17:03.576114
+Document Type: bankSlip
+Engines Used: easyocr, trocr, tesseract
+Success: True
+Confidence: 0.566
+Processing Time: 85.99s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+ips SB
+‘Account Name ‘Mrs. BADDU ..
+Address! WP KALWABADA
+
+‘TEH-MAKRANA.
+
+MAKRANA NAGAUR~241505,
+
+Nagaur
+Date 4 Nov 2019.
+Account Number :00000061068722344
+Account Description REGULAR SB CHO- INDIVIDUALS URAL-INR,
+Branch “MAKRANA
+Drawing Power 20.00
+Interest Rata(% pia.) 13.28
+MOD Balance 20.00
+CIF No. 3271104504150
+IFS Code SSBINOOS1413
+MICR Code. 841002005
+Nomination Registered No
+Balance as on | Sep 2019 32,994.76
+Account Statement from'1 Sep 2019 to 4 Nov 2019
+fran Date |Vatue |Description Rot No.icheque| [ee] | गा Balance]
+[Dale Now
+1 Sep 2079] 1 Sep 2019/BY TRANSFER-INB- MAB0C033207679 | 5,000.00) 7,994.76)
+|MPS924416044700/97720435 |B
+
+1VXX261 IMPS Tan MAB00039207679|
+1 Sep 2019] 1 Sep 2019/BY TAANSFER-INB 4AC90033202020) 2,000.00) 9,994.76]
+iMPS924416944725/97720695 |6
+
+1QXX281 IMPS Te Acoooss202020
+2 Sep 2019| 2 Sep 2019 [BY TRANSFER. TRANSFER 23,850.00 384476
+INEFT*RBISOGORJEP*RBI246 |FROM
+
+190624230°TREASURY 1319417044302
+
+|OFFICE-
+6 Sep 2019] 6 Sep 2019 |by debit card-OTHPG. 2,009.00) 31,844,76}
+COMMUNICATIONS LNOIDA
+6 Sep 2019] 6 Sep 2019! By, debit card-OTHPG. 2,009.00) 29,844.76}
+'9249011 058000NE97
+
+COMMUNICATIONS LNOIDA
+6 Sep 2019] 6 Sep 2019| by debit card-OTHPG | | ae | 27,044.76 |
+1$24902107893ONE97
+
+JCOMMUNICATIONS LNOIDA~
+6 Sep 2019] 6 Sep 2019 by debi card THES. || 2,000.00] | | 25,644.76|
+19249021 29961ONES7
+
+COMMUNICATIONS LNOIDA..
+6 Sep 2019] 6 Sep 2019) by debit card-OTHPG, 2,000,00) (23,844,76|
+1S249021330800NE97
+
+ICOMMUNIGATIONS LNOIDA-
+6 Sep 2019] 6 Sep 2019) yep caré-SBIPG. 23,734.76}
+S49522859EMITRA
+
+MUMBAI
+‘9 Sep 2019] 9 Sep 2019/BY TRANSFER-INB- IMABOG033677292 340.00} 24,074.76
+1nps325019679279182337779 |4
+
+65)00968/- ह800003877292
+
+42Sep| 12. Sep|ATM WOL-ATM CASH 4070. 4,000.00 20,074.76
+| कस
+Zi Sep| 21 SepiBY TRANSFER. (TRANSFER 75,000.00] 35,074.76]
+
+[Text Length: 1817 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+name: Ips Sb Account
+date_of_birth: 2019-11-04
+account_number: 00000061068722344
+bank_name: Sbi
+address: WP KALWABADA  TEH-MAKRANA. MAKRANA NAGAUR
+pincode: 241505
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.574
+  Text Length: 1724
+
+TROCR:
+  Success: True
+  Confidence: 0.500
+  Text Length: 3
+
+TESSERACT:
+  Success: True
+  Confidence: 0.623
+  Text Length: 1817
+
+================================================================================
+END OF RESULTS
+================================================================================

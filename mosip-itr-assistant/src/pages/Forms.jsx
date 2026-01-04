@@ -32,10 +32,18 @@ const FormsPage = () => {
 
     // Get data from multi-document upload or single document extraction
     const multiDocumentData = location.state?.multiDocumentData;
-    const extractedData = location.state?.extractedData?.extracted_data?.structured_data || {};
-    const rawText = location.state?.extractedData?.extracted_data?.raw_text || '';
-    const fieldConfidenceScores = location.state?.extractedData?.extracted_data?.field_confidence_scores || {};
+    const backendResponse = location.state?.extractedData; // Full backend response
+    const extractedData = backendResponse?.extracted_data?.structured_data || {};
+    const rawText = backendResponse?.extracted_data?.raw_text || '';
+    const fieldConfidenceScores = backendResponse?.extracted_data?.field_confidence_scores || {};
     const processingDetails = location.state?.processingDetails;
+
+    // Debug logging
+    console.log('🔍 Forms page data debugging:');
+    console.log('📦 Full backend response:', backendResponse);
+    console.log('📋 Extracted structured data:', extractedData);
+    console.log('📝 Raw text length:', rawText?.length || 0);
+    console.log('🎯 Field confidence scores:', fieldConfidenceScores);
 
     // Enhanced form data with auto-fill support
     const [formData, setFormData] = useState({
@@ -118,20 +126,30 @@ const FormsPage = () => {
         }
 
         console.log('🔄 Starting client-side auto-fill...');
+        console.log('📦 Multi-document data structure:', multiDocumentData);
+        
+        // Debug each document type
+        Object.entries(multiDocumentData).forEach(([docType, docData]) => {
+            console.log(`📋 ${docType} data:`, docData);
+            console.log(`📋 ${docType} extracted_data:`, docData?.extracted_data);
+            console.log(`📋 ${docType} structured_data:`, docData?.extracted_data?.structured_data);
+            console.log(`📋 ${docType} raw_text length:`, docData?.extracted_data?.raw_text?.length || 0);
+        });
         
         // Define field priorities (higher priority documents override lower priority)
         const fieldPriorities = {
-            name: ['aadhaar', 'form16', 'preregistration'],
+            name: ['aadhaar', 'bankSlip', 'form16', 'preregistration', 'income'],
             pan: ['form16', 'preregistration', 'aadhaar'],
             aadhaar: ['aadhaar'],
             date_of_birth: ['aadhaar', 'preregistration'],
-            email: ['preregistration', 'form16'],
-            mobile: ['preregistration', 'aadhaar'],
-            address: ['aadhaar', 'preregistration'],
-            pincode: ['aadhaar', 'preregistration'],
-            gross_salary: ['form16', 'bankSlip'],
-            tds_deducted: ['form16'],
-            total_income: ['form16', 'income'],
+            email: ['bankSlip', 'preregistration', 'form16'],
+            mobile: ['bankSlip', 'preregistration', 'aadhaar'],
+            address: ['bankSlip', 'aadhaar', 'preregistration'],
+            pincode: ['bankSlip', 'aadhaar', 'preregistration'],
+            gross_salary: ['income', 'form16', 'bankSlip'],        // Added 'income' as highest priority
+            tds_deducted: ['income', 'form16'],                    // Added 'income' as highest priority
+            total_income: ['income', 'form16', 'bankSlip'],        // Added 'income' as highest priority
+            net_income: ['income', 'form16'],                      // Added missing field
             account_number: ['bankSlip'],
             ifsc: ['bankSlip'],
             bank_name: ['bankSlip'],
@@ -159,18 +177,28 @@ const FormsPage = () => {
                 if (multiDocumentData[docType] && multiDocumentData[docType].extracted_data) {
                     const docData = multiDocumentData[docType].extracted_data;
                     
+                    console.log(`🔍 Checking ${fieldName} in ${docType}:`, {
+                        hasStructuredData: !!docData.structured_data,
+                        structuredDataKeys: docData.structured_data ? Object.keys(docData.structured_data) : [],
+                        fieldValue: docData.structured_data?.[fieldName],
+                        hasRawText: !!docData.raw_text
+                    });
+                    
                     // Check structured_data first
                     let value = docData.structured_data?.[fieldName];
                     let confidence = docData.field_confidence_scores?.[fieldName] || 0.7;
 
                     if (!value && docData.raw_text) {
                         // Fallback to client-side NER extraction
+                        console.log(`🔄 Fallback NER for ${fieldName} in ${docType}`);
                         const nerResults = nerExtractor.extractFields(docData.raw_text, 'ITR');
                         value = nerResults.fields[fieldName];
                         confidence = nerResults.confidenceScores[fieldName] || 0.5;
                     }
 
-                    if (value && value.trim()) {
+                    if (value && value.toString().trim()) {
+                        console.log(`✅ Found ${fieldName} in ${docType}: ${value} (confidence: ${confidence})`);
+                        
                         // Track conflicts
                         if (bestValue && bestValue !== value) {
                             fieldConflicts.push({

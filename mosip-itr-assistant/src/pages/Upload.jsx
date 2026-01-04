@@ -125,10 +125,17 @@ const UploadPage = () => {
             
             let data;
             if (useEnhancedOCR) {
+                console.log('🚀 Using Enhanced OCR...');
                 data = await apiService.enhancedExtractText(file, `${documentType} Document`, true);
             } else {
+                console.log('🔧 Using Standard OCR...');
                 data = await apiService.extractText(file, `${documentType} Document`);
             }
+            
+            // Debug the API response
+            console.log(`✅ API Response from ${documentType}:`, data);
+            console.log(`📋 Structured data:`, data?.extracted_data?.structured_data);
+            console.log(`📝 Raw text:`, data?.extracted_data?.raw_text?.substring(0, 100) + '...');
             
             // Store extracted text
             setExtractedTexts(prev => ({
@@ -250,6 +257,15 @@ const UploadPage = () => {
 
         try {
             const data = await extractTextFromDocument('form16', form16File);
+            
+            console.log('🚀 Navigating to Forms page with data:', data);
+            console.log('📋 Data structure check:', {
+                hasExtractedData: !!data?.extracted_data,
+                hasStructuredData: !!data?.extracted_data?.structured_data,
+                structuredDataKeys: data?.extracted_data?.structured_data ? Object.keys(data.extracted_data.structured_data) : [],
+                hasRawText: !!data?.extracted_data?.raw_text,
+                rawTextLength: data?.extracted_data?.raw_text?.length || 0
+            });
             
             // Navigate to forms page with single document data
             navigate('/forms', { 

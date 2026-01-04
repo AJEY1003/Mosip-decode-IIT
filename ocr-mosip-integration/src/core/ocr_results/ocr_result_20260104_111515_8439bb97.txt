@@ -1,0 +1,55 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: 8439bb97-361b-4ef4-8a60-98e4c85c9e04
+Timestamp: 2026-01-04T11:15:15.952021
+Document Type: form16
+Engines Used: easyocr, trocr, tesseract
+Success: False
+Confidence: 0.000
+Processing Time: 22.12s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+८.
+[ROH लखन
+Form 16 Part A
+Certificate under Section 203 of the Incom-tax Act, 1961
+Assesment Year 2024-25 Assessment Year 2024-25
+Employer Name XYZ Private Limited
+TAN ABCD12345E El; ee
+_ fee) i u
+दि Preregisiration G 80% 2 Preregistation @ 80% per
+= 8,50,000 ₹ 75,000 (2 80% TTT
+Authorized Signatory
+
+[Text Length: 301 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+No structured data extracted
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.714
+  Text Length: 303
+
+TROCR:
+  Success: True
+  Confidence: 0.700
+  Text Length: 5
+
+TESSERACT:
+  Success: True
+  Confidence: 0.766
+  Text Length: 301
+
+================================================================================
+END OF RESULTS
+================================================================================

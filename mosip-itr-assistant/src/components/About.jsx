@@ -265,7 +265,7 @@ export function About() {
             <div className="space-y-12">
               {timeline.map((item, index) => (
                 <motion.div
-                  key={item.year}
+                  key={`${item.year}-${index}`}
                   initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}

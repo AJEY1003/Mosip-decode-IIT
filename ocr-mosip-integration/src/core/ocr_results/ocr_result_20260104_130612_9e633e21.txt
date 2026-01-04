@@ -1,0 +1,56 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: 9e633e21-c2e1-4ec4-bab6-c1b64cc9ccd5
+Timestamp: 2026-01-04T13:06:12.690661
+Document Type: income
+Engines Used: easyocr, trocr, tesseract
+Success: True
+Confidence: 0.699
+Processing Time: 54.34s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+[EB] Income Details
+Income Summary
+Total Income Gross Salary TDS Deducted
+₹ 8,50,000 ₹ 8,50,000 ₹ 75,000
+Income Summary
+Gross Income: 850,000
+TDS Deducted: रे 75,000
+Net Income: & 7,75,000
+
+[Text Length: 188 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+name: Eb Income Details
+gross_salary: 850000
+total_income: 775000
+tds_deducted: 75000
+net_income: 775000
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.733
+  Text Length: 185
+
+TROCR:
+  Success: True
+  Confidence: 0.500
+  Text Length: 4
+
+TESSERACT:
+  Success: True
+  Confidence: 0.863
+  Text Length: 188
+
+================================================================================
+END OF RESULTS
+================================================================================

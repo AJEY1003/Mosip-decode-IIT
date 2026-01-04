@@ -1,0 +1,63 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: b370a79b-176b-43db-b5c1-15086b83262c
+Timestamp: 2026-01-04T14:29:36.398888
+Document Type: bankSlip
+Engines Used: easyocr, trocr, tesseract
+Success: True
+Confidence: 0.719
+Processing Time: 93.74s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+BANK ACCOUNT DETAILS
+Account Holder Namesjey Kumar
+Account Number: 00000061068722344
+Bank Name: State Bank of India
+IFSC Code: SBINO000456
+Branch: MG Road, Bengaluru
+Address: 12, MG Road, Bengaluru, Karnataka
+PIN Code: 560001
+Account Type: Savings
+Mobile Number: 9876543210
+Email ID: ajey.kumar@example.com
+Note: This is a sample document generated for OCR testing only.
+Authorized Signature:
+
+[Text Length: 392 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+name: Bank Account Details
+account_number: 00000061068722344
+bank_name: State Bank Of India
+pincode: 560001
+email: ajey.kumar@example.com
+mobile: 9876543210
+address: 12, MG Road, Bengaluru, Karnataka
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.723
+  Text Length: 391
+
+TROCR:
+  Success: True
+  Confidence: 0.500
+  Text Length: 3
+
+TESSERACT:
+  Success: True
+  Confidence: 0.934
+  Text Length: 392
+
+================================================================================
+END OF RESULTS
+================================================================================

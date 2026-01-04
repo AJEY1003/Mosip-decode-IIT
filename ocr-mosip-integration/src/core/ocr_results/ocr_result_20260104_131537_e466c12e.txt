@@ -1,0 +1,112 @@
+================================================================================
+OCR EXTRACTION RESULTS
+================================================================================
+Request ID: e466c12e-d18f-41d1-b613-788646702bca
+Timestamp: 2026-01-04T13:15:37.510333
+Document Type: preregistration
+Engines Used: easyocr, trocr, tesseract
+Success: True
+Confidence: 0.732
+Processing Time: 45.74s
+
+================================================================================
+EXTRACTED TEXT
+================================================================================
+INCOME TAX RETURN - ITR-1 (SAHAJ)
+Assessment Year: 2024-25
+
+Financial Year: 2023-24
+
+PERSONAL INFORMATION
+
+Name: Rajesh Kumar Sharma
+
+PAN: ABCDE1234F
+
+Aadhaar Number: 1234 5678 9012
+
+Date of Birth: 15/03/1985
+
+Mobile Number: +91 9876543210
+
+Email Address: rajesh.sharma@email.com
+Address: 123 MG Road, Koramangala, Bangalore, Karnataka
+PIN Code: 560001
+
+EMPLOYMENT DETAILS
+
+Employer: Tech Solutions Private Limited
+Employer TAN: BLRA12345B
+Designation: Senior Software Engineer
+INCOME DETAILS
+
+Gross Salary: रू 12,00,000
+
+TDS Deducted: % 1,50,000
+
+Total Income: & 11,47,500
+
+BANK DETAILS FOR REFUND
+
+Bank Name: State Bank of India
+
+Account Number: 123456789012
+
+IFSC Code: SBINO001234
+
+Account Type: Savings Account
+DECLARATION
+
+1, Rajesh Kumar Sharma, solemnly declare that the information given in this return is correct and
+complete.
+
+Place: Bangalore
+
+Date: 02/01/2026
+
+Signature: Rajesh Kumar Sharma
+
+PAN: ABCDE1234F
+
+[Text Length: 921 characters]
+
+================================================================================
+STRUCTURED DATA
+================================================================================
+name: Income Tax Return
+pan: ABCDE1234F
+aadhaar: 1234 5678 9012
+date_of_birth: 1985-03-15
+tds_deducted: 150000
+total_income: 1147500
+account_number: 123456789012
+bank_name: State Bank Of India
+pincode: 560001
+mobile: +91 9876543210
+email: rajesh.sharma@email.com
+assessment_year: 2024-25
+financial_year: 2023-24
+tan: BLRA12345B
+
+================================================================================
+INDIVIDUAL ENGINE RESULTS
+================================================================================
+
+EASYOCR:
+  Success: True
+  Confidence: 0.574
+  Text Length: 894
+
+TROCR:
+  Success: True
+  Confidence: 0.700
+  Text Length: 17
+
+TESSERACT:
+  Success: True
+  Confidence: 0.920
+  Text Length: 921
+
+================================================================================
+END OF RESULTS
+================================================================================

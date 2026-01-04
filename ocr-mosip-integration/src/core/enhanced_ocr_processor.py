@@ -233,16 +233,52 @@ class EnhancedOCRProcessor:
             results['merged_result'] = merged_result
             
             # Method 7: Extract structured data using NER
-            from .ner_extractor import ITRNERExtractor
-            ner_extractor = ITRNERExtractor()
-            ner_result = ner_extractor.extract_structured_data(
-                merged_result.get('text', ''), 
-                document_type
-            )
-            results['structured_data'] = ner_result['extracted_fields']
-            results['ner_confidence_scores'] = ner_result['confidence_scores']
-            results['ner_overall_confidence'] = ner_result['overall_confidence']
-            results['ner_metadata'] = ner_result['metadata']
+            try:
+                from ner_extractor import ITRNERExtractor
+                ner_extractor = ITRNERExtractor()
+                ner_result = ner_extractor.extract_structured_data(
+                    merged_result.get('text', ''), 
+                    document_type
+                )
+                results['structured_data'] = ner_result['extracted_fields']
+                results['ner_confidence_scores'] = ner_result['confidence_scores']
+                results['ner_overall_confidence'] = ner_result['overall_confidence']
+                results['ner_metadata'] = ner_result['metadata']
+                logger.info(f"✅ NER extraction successful for {document_type}")
+                
+                # ALWAYS supplement with enhanced extraction for income documents
+                if document_type.lower() == 'income':
+                    logger.info("🔧 Supplementing with enhanced extraction for income document")
+                    enhanced_fields = self._extract_basic_income_fields(merged_result.get('text', ''))
+                    
+                    # Merge enhanced fields with NER results (enhanced takes priority for missing fields)
+                    for field, value in enhanced_fields.items():
+                        if field not in results['structured_data'] or not results['structured_data'][field]:
+                            results['structured_data'][field] = value
+                            logger.info(f"🔧 Added missing field from enhanced extraction: {field} = {value}")
+                        else:
+                            logger.info(f"🔧 Field already exists from NER: {field} = {results['structured_data'][field]}")
+                
+                # ALWAYS supplement with enhanced extraction for bank documents
+                elif document_type.lower() in ['bankslip', 'bank_slip', 'bank']:
+                    logger.info("🏦 Supplementing with enhanced extraction for bank document")
+                    enhanced_fields = self._extract_basic_bank_fields(merged_result.get('text', ''))
+                    
+                    # Merge enhanced fields with NER results (enhanced takes priority for missing fields)
+                    for field, value in enhanced_fields.items():
+                        if field not in results['structured_data'] or not results['structured_data'][field]:
+                            results['structured_data'][field] = value
+                            logger.info(f"🏦 Added missing field from enhanced extraction: {field} = {value}")
+                        else:
+                            logger.info(f"🏦 Field already exists from NER: {field} = {results['structured_data'][field]}")
+                
+            except Exception as ner_error:
+                logger.warning(f"❌ NER extraction failed: {str(ner_error)}")
+                # Fallback: Basic pattern matching for income documents
+                results['structured_data'] = self._extract_basic_income_fields(merged_result.get('text', ''))
+                results['ner_confidence_scores'] = {}
+                results['ner_overall_confidence'] = 0.5
+                results['ner_metadata'] = {'extraction_method': 'fallback_patterns', 'error': str(ner_error)}
             
             # Method 8: Calculate confidence scores
             confidence_scores = self._calculate_confidence_scores(results['raw_results'])
@@ -898,6 +934,223 @@ class EnhancedOCRProcessor:
             if match:
                 fields[field_name] = match.group(0)
         
+        return fields
+    
+    def _extract_basic_income_fields(self, text: str) -> Dict[str, Any]:
+        """
+        Basic income field extraction using regex patterns (fallback method for income documents)
+        """
+        fields = {}
+        
+        # First, try to parse the structured table format
+        # Look for pattern: "TDS Deducted" followed by amounts on next lines
+        lines = text.split('\n')
+        
+        # Find the line with headers
+        header_line = None
+        amount_line = None
+        
+        for i, line in enumerate(lines):
+            if 'TDS Deducted' in line and 'Gross Salary' in line:
+                header_line = i
+                # Look for the next line with amounts
+                if i + 1 < len(lines):
+                    amount_line = i + 1
+                break
+        
+        if header_line is not None and amount_line is not None:
+            headers = lines[header_line]
+            amounts = lines[amount_line]
+            
+            logger.info(f"Found structured format - Header: '{headers}', Amounts: '{amounts}'")
+            
+            # Extract all amounts from the amount line
+            amount_matches = re.findall(r'₹\s*([0-9,]+)', amounts)
+            
+            # Map amounts to fields based on position
+            if len(amount_matches) >= 3:
+                try:
+                    # Based on the header order: Total Income, Gross Salary, TDS Deducted
+                    total_income = int(amount_matches[0].replace(',', ''))
+                    gross_salary = int(amount_matches[1].replace(',', ''))
+                    tds_deducted = int(amount_matches[2].replace(',', ''))
+                    
+                    fields['total_income'] = total_income
+                    fields['gross_salary'] = gross_salary
+                    fields['tds_deducted'] = tds_deducted
+                    
+                    # Calculate net income
+                    fields['net_income'] = gross_salary - tds_deducted
+                    
+                    logger.info(f"Structured extraction successful: gross={gross_salary}, tds={tds_deducted}, net={fields['net_income']}")
+                    
+                except ValueError as e:
+                    logger.warning(f"Error parsing structured amounts: {e}")
+        
+        # Fallback to individual line parsing if structured parsing failed
+        if not fields:
+            logger.info("Trying individual line parsing...")
+            
+            for line in lines:
+                # Look for "Gross Income: 850,000"
+                gross_match = re.search(r'gross\s*income[:\s]*([0-9,]+)', line, re.IGNORECASE)
+                if gross_match and 'gross_salary' not in fields:
+                    try:
+                        fields['gross_salary'] = int(gross_match.group(1).replace(',', ''))
+                        logger.info(f"Found gross_salary from line: {fields['gross_salary']}")
+                    except ValueError:
+                        pass
+                
+                # Look for "TDS Deducted: रे 75,000"
+                tds_match = re.search(r'tds\s*deducted[:\s]*[₹$रे&]?\s*([0-9,]+)', line, re.IGNORECASE)
+                if tds_match and 'tds_deducted' not in fields:
+                    try:
+                        fields['tds_deducted'] = int(tds_match.group(1).replace(',', ''))
+                        logger.info(f"Found tds_deducted from line: {fields['tds_deducted']}")
+                    except ValueError:
+                        pass
+                
+                # Look for "Net Income: & 7,75,000"
+                net_match = re.search(r'net\s*income[:\s]*[₹$&रे]?\s*([0-9,]+)', line, re.IGNORECASE)
+                if net_match and 'net_income' not in fields:
+                    try:
+                        fields['net_income'] = int(net_match.group(1).replace(',', ''))
+                        logger.info(f"Found net_income from line: {fields['net_income']}")
+                    except ValueError:
+                        pass
+        
+        # Calculate missing fields
+        if 'gross_salary' in fields and 'tds_deducted' in fields:
+            if 'net_income' not in fields:
+                fields['net_income'] = fields['gross_salary'] - fields['tds_deducted']
+                logger.info(f"Calculated net_income: {fields['net_income']}")
+            if 'total_income' not in fields:
+                fields['total_income'] = fields['net_income']
+                logger.info(f"Set total_income: {fields['total_income']}")
+        
+        # Extract name if present
+        name_patterns = [
+            r'(?:name|applicant)[:\s]+([A-Z][a-zA-Z\s]+)',
+            r'([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'
+        ]
+        for pattern in name_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                name = match.group(1).strip().title()
+                if len(name.split()) >= 2:  # At least first and last name
+                    fields['name'] = name
+                    break
+        
+        # Extract PAN if present
+        pan_match = re.search(r'[A-Z]{5}[0-9]{4}[A-Z]', text)
+        if pan_match:
+            fields['pan'] = pan_match.group(0)
+        
+        # Extract Aadhaar if present
+        aadhaar_match = re.search(r'\d{4}\s?\d{4}\s?\d{4}', text)
+        if aadhaar_match:
+            fields['aadhaar'] = aadhaar_match.group(0)
+        
+        # Extract dates
+        date_match = re.search(r'\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}', text)
+        if date_match:
+            fields['date'] = date_match.group(0)
+        
+        logger.info(f"🔍 Fallback extraction found {len(fields)} fields: {list(fields.keys())}")
+        return fields
+    
+    def _extract_basic_bank_fields(self, text: str) -> Dict[str, Any]:
+        """
+        Basic bank field extraction using regex patterns (fallback method for bank documents)
+        """
+        fields = {}
+        
+        print(f"🏦 Testing bank extraction on text:")
+        print(f"'{text[:200]}...'")
+        print("-" * 50)
+        
+        # Bank-specific patterns
+        bank_patterns = {
+            'account_number': [
+                r'account\s*number[:\s]*([0-9]+)',
+                r'a/c\s*no[:\s]*([0-9]+)',
+                r'account\s*no[:\s]*([0-9]+)',
+                r'([0-9]{10,18})'  # Generic account number pattern
+            ],
+            'ifsc': [
+                r'ifsc\s*code[:\s]*([A-Z]{4,5}[0-9]{6,7})',  # More flexible IFSC pattern
+                r'ifsc[:\s]*([A-Z]{4,5}[0-9]{6,7})',
+                r'([A-Z]{4,5}[0-9]{6,7})',  # Generic IFSC pattern (4-5 letters, 6-7 digits)
+                r'([A-Z]{4}[0-9]{7})',  # Standard IFSC pattern
+                r'([A-Z]{5}[0-9]{6})'   # Alternative IFSC pattern
+            ],
+            'bank_name': [
+                r'bank\s*name[:\s]*([A-Za-z\s]+?)(?:\n|$|[0-9])',
+                r'bank[:\s]*([A-Za-z\s]+?)(?:\n|$|[0-9])',
+                r'(State Bank of India|HDFC Bank|ICICI Bank|Axis Bank|Punjab National Bank|Bank of Baroda|Canara Bank|Union Bank|Indian Bank)'
+            ],
+            'mobile': [
+                r'mobile\s*number[:\s]*([0-9]{10})',
+                r'mobile[:\s]*([0-9]{10})',
+                r'phone[:\s]*([0-9]{10})',
+                r'([0-9]{10})'
+            ],
+            'email': [
+                r'email\s*id[:\s]*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})',
+                r'email[:\s]*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})',
+                r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+            ],
+            'pincode': [
+                r'pin\s*code[:\s]*([0-9]{6})',
+                r'pincode[:\s]*([0-9]{6})',
+                r'pin[:\s]*([0-9]{6})',
+                r'([0-9]{6})'
+            ]
+        }
+        
+        # Extract fields using patterns
+        for field_name, patterns in bank_patterns.items():
+            for pattern in patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    value = match.group(1).strip()
+                    if value and (field_name not in fields):
+                        fields[field_name] = value
+                        logger.info(f"🏦 Found {field_name}: {value}")
+                        break
+        
+        # Extract name from account holder
+        name_patterns = [
+            r'account\s*holder\s*name[:\s]*([A-Za-z\s]+?)(?:\n|$)',
+            r'holder\s*name[:\s]*([A-Za-z\s]+?)(?:\n|$)',
+            r'name[:\s]*([A-Za-z\s]+?)(?:\n|$)'
+        ]
+        
+        for pattern in name_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                name = match.group(1).strip().title()
+                if len(name.split()) >= 2 and 'name' not in fields:  # At least first and last name
+                    fields['name'] = name
+                    logger.info(f"🏦 Found name: {name}")
+                    break
+        
+        # Extract address
+        address_patterns = [
+            r'address[:\s]*([A-Za-z0-9\s,.-]+?)(?:PIN|pin|Phone|Mobile|Email|\n\n)',
+            r'branch[:\s]*([A-Za-z0-9\s,.-]+?)(?:PIN|pin|Phone|Mobile|Email|\n\n)'
+        ]
+        
+        for pattern in address_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                address = match.group(1).strip()
+                if len(address) > 10 and 'address' not in fields:  # Reasonable address length
+                    fields['address'] = address
+                    logger.info(f"🏦 Found address: {address}")
+                    break
+        
+        logger.info(f"🏦 Bank extraction found {len(fields)} fields: {list(fields.keys())}")
         return fields
     
     def _calculate_confidence_scores(self, raw_results: Dict[str, Any]) -> Dict[str, float]:
