@@ -386,6 +386,57 @@ class APIService {
             body: JSON.stringify(payload)
         });
     }
+
+    /**
+     * Decode QR code data for ITR form auto-fill
+     * @param {string} qrData - QR code data (base64 image or text)
+     * @param {string} imageFormat - Image format if qrData is base64 image
+     */
+    async decodeQRData(qrData, imageFormat = 'png') {
+        const payload = {
+            qr_image: qrData,
+            image_format: imageFormat
+        };
+
+        return this.request('/api/qr/decode-itr', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /**
+     * Generate test QR code with sample ITR data for testing
+     */
+    async generateTestITRQR() {
+        return this.request('/api/qr/generate-test-itr');
+    }
+
+    /**
+     * Process Form-16 document and generate comprehensive QR code
+     * @param {File} form16File - Form-16 document file
+     * @param {boolean} includeQR - Whether to generate QR code (default: true)
+     */
+    async processForm16AndGenerateQR(form16File, includeQR = true) {
+        try {
+            const formData = new FormData();
+            formData.append('form16_document', form16File);
+            formData.append('include_qr_generation', includeQR.toString());
+
+            const response = await fetch(`${this.baseURL}/api/form16/process-and-generate-qr`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Form-16 processing failed: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Form-16 processing error:', error);
+            throw error;
+        }
+    }
 }
 
 // Create singleton instance

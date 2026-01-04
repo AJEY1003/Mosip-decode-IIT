@@ -20,13 +20,16 @@ class ITRNERExtractor:
         self.patterns = {
             # Personal Information
             'name': [
-                r'name[:\s]*([A-Za-z\s]+?)(?:\n|$|[0-9])',
-                r'applicant[:\s]*([A-Za-z\s]+?)(?:\n|$|[0-9])',
-                r'full\s*name[:\s]*([A-Za-z\s]+?)(?:\n|$|[0-9])',
-                r'taxpayer[:\s]*([A-Za-z\s]+?)(?:\n|$|[0-9])',
-                r'mr\.?\s*([A-Za-z\s]+?)(?:\n|$|[0-9])',
-                r'ms\.?\s*([A-Za-z\s]+?)(?:\n|$|[0-9])',
-                r'([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'  # Name pattern
+                # Most specific patterns first - exact "Name:" label match
+                r'Name\s*:\s*([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){1,3})(?=\s*\n|\s*$|\s*PAN|\s*Aadhaar)',  # "Name: Rajesh Kumar Sharma" followed by newline/PAN/Aadhaar
+                r'name\s*:\s*([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){1,3})(?=\s*\n|\s*$|\s*PAN|\s*Aadhaar)',  # Case insensitive
+                r'Full\s*Name\s*:\s*([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){1,3})(?=\s*\n|\s*$)',  # "Full Name: ..."
+                r'Applicant\s*Name\s*:\s*([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){1,3})(?=\s*\n|\s*$)',  # "Applicant Name: ..."
+                r'Taxpayer\s*Name\s*:\s*([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){1,3})(?=\s*\n|\s*$)',  # "Taxpayer Name: ..."
+                # Avoid document titles by requiring proper name format and context
+                r'(?:Mr\.?\s+|Ms\.?\s+|Mrs\.?\s+)?([A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+)(?=\s*,\s*solemnly\s*declare)',  # From declaration section
+                # Last resort - proper name format only (3 words minimum to avoid titles)
+                r'([A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+)(?=\s*\n\s*PAN|\s*\n\s*Aadhaar)'  # 3-word names followed by PAN/Aadhaar
             ],
             
             'pan': [
@@ -77,6 +80,46 @@ class ITRNERExtractor:
                 r'₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)'  # Table format
             ],
             
+            'basic_salary': [
+                r'basic\s*salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'basic\s*pay[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'basic[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                # Enhanced patterns for Form-16 format
+                r'basic\s+salary\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "Basic Salary 6,00,000"
+                r'basic\s+salary\s+(\d+(?:,\d+)*(?:\.\d{2})?)',       # "Basic Salary 600000"
+                r'basic\s+pay\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',    # "Basic Pay ₹ 6,00,000"
+            ],
+            
+            'hra_received': [
+                r'hra\s*received[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'house\s*rent\s*allowance[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'hra[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                # Enhanced patterns for Form-16 format
+                r'hra\s+received\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "HRA Received 2,40,000"
+                r'hra\s+received\s+(\d+(?:,\d+)*(?:\.\d{2})?)',       # "HRA Received 240000"
+                r'house\s+rent\s+allowance\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "House Rent Allowance ₹ 2,40,000"
+            ],
+            
+            'other_allowances': [
+                r'other\s*allowances[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'other\s*allowance[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'allowances[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'miscellaneous\s*allowances[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                # Enhanced patterns for Form-16 format
+                r'other\s+allowances\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "Other Allowances 1,10,000"
+                r'other\s+allowances\s+(\d+(?:,\d+)*(?:\.\d{2})?)',       # "Other Allowances 110000"
+                r'miscellaneous\s+allowances\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "Miscellaneous Allowances ₹ 1,10,000"
+            ],
+            
+            'professional_tax': [
+                r'professional\s*tax[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'prof\s*tax[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                r'pt[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+                # Enhanced patterns for Form-16 format
+                r'professional\s+tax\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "Professional Tax 2,400"
+                r'professional\s+tax\s+(\d+(?:,\d+)*(?:\.\d{2})?)',       # "Professional Tax 2400"
+            ],
+            
             'tds_deducted': [
                 # Most specific patterns first - these should get higher confidence
                 r'tds\s+deducted:\s*रे\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # "TDS Deducted: रे 75,000"
@@ -121,11 +164,18 @@ class ITRNERExtractor:
             
             # Employer Information
             'employer': [
-                r'employer[:\s]*([A-Za-z\s&\.]+?)(?:\n|$|address)',
-                r'company[:\s]*([A-Za-z\s&\.]+?)(?:\n|$|address)',
-                r'organization[:\s]*([A-Za-z\s&\.]+?)(?:\n|$|address)',
-                r'firm[:\s]*([A-Za-z\s&\.]+?)(?:\n|$|address)',
-                r'deductor[:\s]*([A-Za-z\s&\.]+?)(?:\n|$|address)'
+                # Most specific patterns first - exclude the label itself
+                r'Employer\s*Name\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*Employer\s*TAN|\s*$)',  # "Employer Name: XYZ Private Limited"
+                r'Employer\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*Employer\s*TAN|\s*$)',  # "Employer: XYZ Private Limited"
+                r'employer\s*name\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*$)',  # Case insensitive
+                r'employer\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*$)',  # Case insensitive
+                r'Company\s*Name\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*$)',  # "Company Name: ..."
+                r'Company\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*$)',  # "Company: ..."
+                r'Organization\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*$)',  # "Organization: ..."
+                r'Firm\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*$)',  # "Firm: ..."
+                r'Deductor\s*:\s*([A-Za-z\s&\.\-]+?)(?=\s*\n|\s*TAN|\s*$)',  # "Deductor: ..."
+                # Generic patterns with better boundaries - avoid capturing labels
+                r'(?:Employer\s+Name\s+|Company\s+Name\s+)?([A-Z][A-Za-z\s&\.\-]+(?:Private\s+Limited|Pvt\.?\s+Ltd\.?|Limited|Ltd\.?|Corporation|Corp\.?|Company|Co\.?))(?=\s*\n|\s*TAN|\s*$)'  # Company name patterns
             ],
             
             # Address Information
@@ -340,8 +390,28 @@ class ITRNERExtractor:
         
         if field_name in ['name', 'employer', 'bank_name']:
             # Clean name fields
-            value = re.sub(r'\s+', ' ', value)
-            value = re.sub(r'[^\w\s&\.]', '', value)
+            value = re.sub(r'\s+', ' ', value)  # Normalize whitespace
+            
+            # Remove common contamination patterns
+            if field_name == 'name':
+                # Remove common name contamination
+                value = re.sub(r'\s*PAN\s*[A-Z0-9]*\s*$', '', value, flags=re.IGNORECASE)  # Remove "PAN ABCDEF"
+                value = re.sub(r'\s*Aadhaar\s*[0-9\s]*\s*$', '', value, flags=re.IGNORECASE)  # Remove "Aadhaar 1234"
+                value = re.sub(r'\s*Income\s*Tax\s*Return.*$', '', value, flags=re.IGNORECASE)  # Remove "Income Tax Return"
+                
+            elif field_name == 'employer':
+                # Remove common employer contamination
+                value = re.sub(r'^Employer\s*Name\s*', '', value, flags=re.IGNORECASE)  # Remove "Employer Name" prefix
+                value = re.sub(r'^Employer\s*', '', value, flags=re.IGNORECASE)  # Remove "Employer" prefix
+                value = re.sub(r'^Company\s*Name\s*', '', value, flags=re.IGNORECASE)  # Remove "Company Name" prefix
+                value = re.sub(r'\s*TAN\s*[A-Z0-9]*\s*$', '', value, flags=re.IGNORECASE)  # Remove "TAN ABCD"
+                value = re.sub(r'\s*Employer\s*TAN\s*[A-Z0-9]*\s*$', '', value, flags=re.IGNORECASE)  # Remove "Employer TAN"
+                value = re.sub(r'\s*Designation.*$', '', value, flags=re.IGNORECASE)  # Remove "Designation ..."
+                
+            # Remove special characters except allowed ones
+            value = re.sub(r'[^\w\s&\.\-]', '', value)
+            value = re.sub(r'\s+', ' ', value).strip()  # Final whitespace cleanup
+            
             return value.title() if value else None
             
         elif field_name == 'pan':

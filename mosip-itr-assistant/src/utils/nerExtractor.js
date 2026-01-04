@@ -61,6 +61,46 @@ class NERExtractor {
                 /total\s+income\s+₹\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i   // "Total Income ₹ 8,50,000"
             ],
             
+            basic_salary: [
+                /basic\s*salary[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /basic\s*pay[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /basic[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                // Enhanced patterns for Form-16 format
+                /basic\s+salary\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,  // "Basic Salary 6,00,000"
+                /basic\s+salary\s+(\d+(?:,\d+)*(?:\.\d{2})?)/i,       // "Basic Salary 600000"
+                /basic\s+pay\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i     // "Basic Pay ₹ 6,00,000"
+            ],
+            
+            hra_received: [
+                /hra\s*received[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /house\s*rent\s*allowance[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /hra[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                // Enhanced patterns for Form-16 format
+                /hra\s+received\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,  // "HRA Received 2,40,000"
+                /hra\s+received\s+(\d+(?:,\d+)*(?:\.\d{2})?)/i,       // "HRA Received 240000"
+                /house\s+rent\s+allowance\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i  // "House Rent Allowance ₹ 2,40,000"
+            ],
+            
+            other_allowances: [
+                /other\s*allowances[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /other\s*allowance[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /allowances[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /miscellaneous\s*allowances[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                // Enhanced patterns for Form-16 format
+                /other\s+allowances\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,  // "Other Allowances 1,10,000"
+                /other\s+allowances\s+(\d+(?:,\d+)*(?:\.\d{2})?)/i,       // "Other Allowances 110000"
+                /miscellaneous\s+allowances\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i  // "Miscellaneous Allowances ₹ 1,10,000"
+            ],
+            
+            professional_tax: [
+                /professional\s*tax[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /prof\s*tax[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                /pt[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
+                // Enhanced patterns for Form-16 format
+                /professional\s+tax\s+₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,  // "Professional Tax 2,400"
+                /professional\s+tax\s+(\d+(?:,\d+)*(?:\.\d{2})?)/i        // "Professional Tax 2400"
+            ],
+            
             tds_deducted: [
                 /tds\s*deducted[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
                 /tax\s*deducted[:\s]*₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)/i,
