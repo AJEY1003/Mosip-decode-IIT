@@ -323,6 +323,101 @@ class APIService {
     }
 
     /**
+     * Comprehensive ITR Analysis with multiple documents
+     * @param {Object} documents - Object with document type as key and extracted data as value
+     */
+    async analyzeITRDocuments(documents) {
+        const payload = {
+            documents: documents
+        };
+
+        return this.request('/api/itr/analyze', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /**
+     * Process multiple documents for ITR filing
+     * @param {Array} files - Array of file objects
+     * @param {Array} documentTypes - Array of document type strings
+     */
+    async processMultipleDocuments(files, documentTypes) {
+        const formData = new FormData();
+        
+        files.forEach((file, index) => {
+            formData.append('files', file);
+        });
+        
+        documentTypes.forEach((type) => {
+            formData.append('document_types', type);
+        });
+
+        try {
+            const response = await fetch(`${this.baseURL}/api/itr/process-documents`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Multi-document processing failed: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Multi-document processing error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Calculate tax refund based on income and deduction details
+     * @param {Object} incomeDetails - Income information
+     * @param {Object} deductions - Deduction information
+     */
+    async calculateTaxRefund(incomeDetails, deductions) {
+        const payload = {
+            income_details: incomeDetails,
+            deductions: deductions
+        };
+
+        return this.request('/api/itr/calculate-refund', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /**
+     * Generate QR code from processed documents
+     * @param {Object} documents - Object with document type as key and extracted data as value
+     */
+    async generateDocumentsQR(documents) {
+        const payload = {
+            documents: documents
+        };
+
+        return this.request('/api/documents/generate-qr', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /**
+     * Decode QR code data for ITR form filling
+     * @param {string} qrData - QR code data string
+     */
+    async decodeQRData(qrData) {
+        const payload = {
+            qr_data: qrData
+        };
+
+        return this.request('/api/qr/decode', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /**
      * Extract Named Entity Recognition (NER) from text
      * @param {string} text - Combined text from multiple documents
      * @param {Array} fieldTypes - Specific field types to extract

@@ -10,13 +10,13 @@ from datetime import datetime
 import yaml
 from jsonschema import validate, ValidationError
 
-from ocr_processor import OCRProcessor
-from enhanced_ocr_processor import EnhancedOCRProcessor
-from hindi_ocr_processor import HindiOCRProcessor
-from mosip_client import MOSIPClient
-from injinet_client import InjInetClient, MockInjINetClient
-from inji_verify_client import InjiVerifyClient, MockInjiVerifyClient
-from semantic_validator import SemanticValidator
+from .ocr_processor import OCRProcessor
+from .enhanced_ocr_processor import EnhancedOCRProcessor
+from .hindi_ocr_processor import HindiOCRProcessor
+from .mosip_client import MOSIPClient
+from .injinet_client import InjInetClient, MockInjINetClient
+from .inji_verify_client import InjiVerifyClient, MockInjiVerifyClient
+from .semantic_validator import SemanticValidator
 
 load_dotenv()
 
